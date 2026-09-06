@@ -7,7 +7,7 @@ const path = require('path');
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-const DB_PATH = __dirname;
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data');
 
 // ============================================================
 // 数据库连接
