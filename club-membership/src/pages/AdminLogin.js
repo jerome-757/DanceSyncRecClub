@@ -33,9 +33,10 @@ export const AdminLogin = () => {
     
         const { username, password } = credentials;
     
-        axios.post('http://localhost:3001/validate-admin-password', { username, password })
+        axios.post('http://localhost:3001/api/admin-login', { username, password })
             .then(res => {
-                if (res.data.validation) {
+                console.log('登录响应:', res.data);
+                if (res.data.code === 0) {
                     setUser({ // Set the user context state
                         isAuthenticated: true,
                         role: 'admin',

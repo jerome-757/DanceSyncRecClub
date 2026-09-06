@@ -1,20 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import Hiphop from '../assets/hiphop.png';
+import Hiphop from '../assets/xiaowu.jpg';
 import Footer from '../components/Footer';
+import MyBackground from '../assets/wuting.jpg';
 
 const WelcomeScreen = () => {
   return (
     <div className=" bg-white w-screen flex flex-col text-center">
       <Navbar />
-      <div className=' py-72 flex flex-row w-full bg-gray-600 items-center justify-around contain-content'>
-        <img className='absolute w-full h-full ' src="https://wallpapers.com/images/hd/dance-studio-background-ny1jrb561lvx59gx.jpg" alt='dancers' />
+      <div className=' min-h-[1200px] py-20 flex flex-row w-full bg-gray-600 items-center justify-around contain-content'>
+        {/* <img className='absolute w-full h-full ' src="https://wallpapers.com/images/hd/dance-studio-background-ny1jrb561lvx59gx.jpg" alt='dancers' /> */}
+        {/* <img className='absolute w-full h-full ' src={MyBackground} alt='dancers' /> */}
+        {/* <img className='absolute w-full h-full object-cover' src={MyBackground} alt='dancers' /> */}
+        <img className='absolute h-128 w-auto object-contain' src={MyBackground} alt='dancers' />
         <div className='absolute w-full h-full bg-blue-800 bg-opacity-30' />
-        <h1 className=' mt-6 text-white font-bold text-10xl rakkas bg-blue-900 w-fit z-10'>REC CLUB</h1>
+        {/* <h1 className=' mt-6 text-white font-bold text-10xl rakkas p-8 bg-blue-900 w-fit z-10'>星 发</h1> */}
       </div>
       <div className=' bg-gray-400 py-20 flex justify-between flex-col'>
-        <h1 className=' text-8xl text-blue-900 fancy'>Let's GO!</h1>
+        <h1 className=' text-8xl text-blue-900 fancy'>Together Tonight, Let's GO!</h1>
         <div className='flex flex-row py-24 px-80 justify-evenly items-center'>
           <Link to="/login" className='login-button transition hover:bg-green-900'>
             <p>Member Login</p>
@@ -31,16 +35,16 @@ const WelcomeScreen = () => {
         </Link>
       </div>
       <div className=' w-screen py-36 text-wrap text-left bg-gray-200'>
-        <h1 className=' text-center text-6xl text-blue-900 font-bold pb-20 reddit-mono'>Welcome to Rec Club!</h1>
+        <h1 className=' text-center text-6xl text-blue-900 font-bold pb-20 reddit-mono'>Welcome to XING FA dance club!</h1>
         <div className='flex justify-evenly flex-ro px-36'>
           <p className=' flex text-wrap text-xl flex-2 text-gray-500'>
-          At Rec Club, we're all about the joy of dance and the camaraderie of our tight-knit community. Whether you're a seasoned dancer or just starting out, our club offers a welcoming space for everyone to come together and enjoy the rhythm of life.
+          At XING FA dance club, we're all about the joy of dance and the camaraderie of our tight-knit community. Whether you're a seasoned dancer or just starting out, our club offers a welcoming space for everyone to come together and enjoy the rhythm of life.
           <br></br>
           <br></br>
           With weekly practice sessions led by our passionate amateur coach, you'll have the opportunity to improve your skills, learn new moves, and dance the night away in a fun and supportive environment.
           <br></br>
           <br></br>
-          Membership at Rec Club is flexible, allowing you to attend practices on your own schedule. Simply show up when it suits you, and pay as you go. For added convenience, members have the option to pay for practices in advance, with discounts available for those who choose to do so.
+          Membership at XING FA dance club is flexible, allowing you to attend practices on your own schedule. Simply show up when it suits you, and pay as you go. For added convenience, members have the option to pay for practices in advance, with discounts available for those who choose to do so.
           <br></br>
           <br></br>
           Our dedicated treasurer ensures that our practice space is always ready for us, handling the monthly rent payments with precision and care. And our coach, while balancing a full-time job, is committed to providing top-notch instruction whenever she's able to join us on the dance floor.
@@ -49,9 +53,9 @@ const WelcomeScreen = () => {
           With our app, we keep track of club finances and member attendance, ensuring that everyone stays accountable and that our club can continue to thrive. Plus, we send out friendly reminders about upcoming practices, so you'll never miss a chance to dance!
           <br></br>
           <br></br>
-          So come join us at Rec Club, where every step brings us closer together and every beat keeps us moving forward. Let's dance!
+          So come join us at XING FA dance club, where every step brings us closer together and every beat keeps us moving forward. Let's dance!
           </p>
-          <img className=' flex-1 h-1/4 w-auto' src={Hiphop} alt="dancer" />
+          <img className=' w-[500px] h-auto' src={Hiphop} alt="dancer" />
         </div>
       </div>
       <Footer />

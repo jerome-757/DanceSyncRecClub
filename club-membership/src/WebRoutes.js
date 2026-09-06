@@ -22,6 +22,11 @@ import MemberPayment from './pages/MemberPayment';
 import AdminFinances from './pages/AdminFinances'
 import CurrentMonthPayables from './pages/CurrentMonthPayables'
 import Attendance from './pages/Attendance';
+// ===== 新增导入 =====
+import ScanEntry from './pages/ScanEntry';
+import MemberCard from './pages/MemberCard';
+import CardTypeManagement from './pages/CardTypeManagement';
+
 
 export const WebRoutes = () => {
     return (
@@ -49,6 +54,14 @@ export const WebRoutes = () => {
                         <Route path='/admin-finances' element={<AdminFinances />} />
                         <Route path='/current-month-payables' element={<CurrentMonthPayables />} />
                         <Route path='/attendance' element={<Attendance />} />
+                        
+                        {/* ===== 新增路由 ===== */}
+                        <Route path="/scan" element={<ScanEntry />} />
+                        <Route path="/member-card/:memberNo" element={<MemberCard />} />
+                        <Route path="/card-types" element={<CardTypeManagement />} />
+
+                        
+                        {/* 404页面 */}
                         <Route path='*' element={
                         <div className=' overflow-y-hidden h-screen bg-black text-3xl text-white reddit-mono'>
                             <h1>Page not found</h1>

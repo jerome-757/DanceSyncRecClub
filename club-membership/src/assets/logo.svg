@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <!-- 背景径向渐变 -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%" fx="45%" fy="45%">
+      <stop offset="0%" stop-color="#0B1A3A"/>
+      <stop offset="100%" stop-color="#1B3B6B"/>
+    </radialGradient>
+
+    <!-- 光点渐变 -->
+    <radialGradient id="dotOrange" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF8C00"/>
+      <stop offset="100%" stop-color="#FF6B00"/>
+    </radialGradient>
+    <radialGradient id="dotYellow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#FFB800"/>
+    </radialGradient>
+    <radialGradient id="dotWhite" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FFF5E0"/>
+    </radialGradient>
+
+    <!-- 发光滤镜 -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowStrong">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- 裁剪圆，用来截断内部的星星 -->
+    <clipPath id="circleClip">
+      <circle cx="400" cy="300" r="130"/>
+    </clipPath>
+
+    <!-- 定义环绕中间圆边线的文字路径 (半径约150，正好在中间圆金边的正上方) -->
+    <path id="textPathArc" d="M 255 300 A 145 145 0 1 1 545 300 A 145 145 0 1 1 255 300" />
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="800" height="600" fill="#FFFFFF"/>
+
+  <!-- ===== 外围白圈和边框 ===== -->
+  <!-- 唯一的外圈（整体白色圆盘，左右有菱形） -->
+  <circle cx="400" cy="300" r="230" fill="#FFFFFF"/>
+  <circle cx="400" cy="300" r="230" fill="none" stroke="#C9A961" stroke-width="6"/>
+
+  <!-- 左右菱形装饰 -->
+  <polygon points="170,300 185,285 200,300 185,315" fill="#C9A961"/>
+  <polygon points="600,300 615,285 630,300 615,315" fill="#C9A961"/>
+
+  <!-- ===== 文字：XF CLUB 完美环绕中间圆边线 ===== -->
+  <!-- 文字紧贴着中间那个圆的金色边缘排列 -->
+  <text font-family="Arial, sans-serif" font-weight="bold" font-size="45" fill="#000000" letter-spacing="8">
+    <textPath href="#textPathArc" startOffset="12%">XF CLUB</textPath>
+  </text>
+
+  <!-- ===== 中间星空部分 ===== -->
+  <!-- 深蓝黑底色 -->
+  <circle cx="400" cy="300" r="135" fill="#0B1A3A"/> 
+
+  <!-- 将星星限定在圆内 -->
+  <g clip-path="url(#circleClip)">
+    <circle cx="400" cy="300" r="135" fill="url(#bgGrad)"/>
+    
+    <!-- 外层散落光点 -->
+    <circle cx="330" cy="190" r="3" fill="url(#dotWhite)" opacity="0.4"/>
+    <circle cx="470" cy="180" r="2" fill="url(#dotWhite)" opacity="0.3"/>
+    <circle cx="490" cy="390" r="4" fill="url(#dotWhite)" opacity="0.35"/>
+    <circle cx="310" cy="410" r="2.5" fill="url(#dotWhite)" opacity="0.25"/>
+    <circle cx="280" cy="340" r="3.5" fill="url(#dotWhite)" opacity="0.4"/>
+    <circle cx="520" cy="320" r="2" fill="url(#dotWhite)" opacity="0.3"/>
+    <circle cx="450" cy="420" r="3" fill="url(#dotWhite)" opacity="0.35"/>
+    <circle cx="350" cy="420" r="2.5" fill="url(#dotWhite)" opacity="0.3"/>
+    <circle cx="300" cy="270" r="4" fill="url(#dotWhite)" opacity="0.25"/>
+    <circle cx="500" cy="270" r="3" fill="url(#dotWhite)" opacity="0.2"/>
+    
+    <!-- 中层光点 -->
+    <circle cx="340" cy="230" r="6" fill="url(#dotYellow)" opacity="0.6"/>
+    <circle cx="460" cy="230" r="5" fill="url(#dotOrange)" opacity="0.55"/>
+    <circle cx="480" cy="340" r="7" fill="url(#dotYellow)" opacity="0.5"/>
+    <circle cx="320" cy="340" r="5.5" fill="url(#dotOrange)" opacity="0.6"/>
+    <circle cx="350" cy="290" r="6" fill="url(#dotYellow)" opacity="0.55"/>
+    <circle cx="450" cy="290" r="7" fill="url(#dotOrange)" opacity="0.5"/>
+    <circle cx="400" cy="210" r="5" fill="url(#dotYellow)" opacity="0.6"/>
+    <circle cx="400" cy="390" r="6.5" fill="url(#dotOrange)" opacity="0.55"/>
+    
+    <!-- 内层核心光点，形成S形旋涡 -->
+    <circle cx="380" cy="240" r="10" fill="url(#dotOrange)" opacity="0.85" filter="url(#glow)"/>
+    <circle cx="420" cy="230" r="8" fill="url(#dotOrange)" opacity="0.9"/>
+    <circle cx="450" cy="260" r="11" fill="url(#dotOrange)" opacity="0.85" filter="url(#glow)"/>
+    <circle cx="460" cy="290" r="9" fill="url(#dotYellow)" opacity="0.9"/>
+    <circle cx="430" cy="320" r="12" fill="url(#dotOrange)" opacity="0.85" filter="url(#glow)"/>
+    <circle cx="390" cy="340" r="10" fill="url(#dotOrange)" opacity="0.9"/>
+    <circle cx="360" cy="320" r="8" fill="url(#dotYellow)" opacity="0.85"/>
+    
+    <circle cx="400" cy="300" r="14" fill="url(#dotOrange)" opacity="0.95" filter="url(#glowStrong)"/>
+    <circle cx="410" cy="270" r="11" fill="url(#dotOrange)" opacity="0.9"/>
+    <circle cx="370" cy="270" r="9" fill="url(#dotYellow)" opacity="0.85"/>
+    
+    <circle cx="360" cy="360" r="12" fill="url(#dotOrange)" opacity="0.9"/>
+    <circle cx="340" cy="380" r="14" fill="url(#dotOrange)" opacity="0.85" filter="url(#glowStrong)"/>
+    <circle cx="310" cy="370" r="11" fill="url(#dotYellow)" opacity="0.9"/>
+    <circle cx="290" cy="350" r="9" fill="url(#dotOrange)" opacity="0.85"/>
+    
+    <!-- 核心高亮区 -->
+    <circle cx="400" cy="300" r="5" fill="#FFFFFF" opacity="0.9" filter="url(#glowStrong)"/>
+    <circle cx="395" cy="295" r="3" fill="#FFFFFF" opacity="0.7"/>
+
+    <!-- 拖尾效果 -->
+    <ellipse cx="480" cy="250" rx="15" ry="4" fill="#FF6B00" opacity="0.2" transform="rotate(-30 480 250)"/>
+    <ellipse cx="320" cy="400" rx="18" ry="5" fill="#FF6B00" opacity="0.2" transform="rotate(20 320 400)"/>
+    <ellipse cx="270" cy="330" rx="20" ry="5" fill="#FFB800" opacity="0.15" transform="rotate(-15 270 330)"/>
+  </g>
+
+  <!-- 中间圆边缘的金色细线（在文字内侧，完美衬托文字） -->
+  <circle cx="400" cy="300" r="135" fill="none" stroke="#C9A961" stroke-width="4"/>
+</svg>

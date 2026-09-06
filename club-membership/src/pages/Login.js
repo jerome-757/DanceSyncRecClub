@@ -33,9 +33,10 @@ export const Login = () => {
     
         const { username, password } = credentials;
     
-        axios.post('http://localhost:3001/validate-member-password', { username, password })
+        axios.post('http://localhost:3001/api/member-login', { username, password })
             .then(res => {
-                if (res.data.validation) {
+                console.log('登录响应:', res.data);
+                if (res.data.code === 0) {
                     setUser({ // Set the user context state
                         isAuthenticated: true,
                         role: 'member',
@@ -43,7 +44,7 @@ export const Login = () => {
                     });
                     navigate('/member'); // Navigate to the coach's homepage
                 } else {
-                    setErrorMessage('Incorrect username or password');
+                    setErrorMessage(res.data.message || '用户名或密码错误');
                 }
             })
             .catch(error => {

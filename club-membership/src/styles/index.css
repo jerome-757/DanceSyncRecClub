@@ -2,6 +2,11 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+/* 全局字体大小 */
+html {
+    font-size: 24px;  /* 默认是16px，改成20px就是放大1.25倍 */
+}
+
 body {
     font-family: 'Roboto', sans-serif;
     overflow-x: hidden;
@@ -135,10 +140,17 @@ body {
     background-color: aliceblue;
 }
 
-.feature-icon{
+/* .feature-icon{
     height: 60%;
     width: auto;
     margin-top: 2rem;
+} */
+.feature-icon{
+    font-size: 180px !important;
+    margin-top: 2rem;
+    color: rgb(60, 73, 104);
+    height: auto !important;
+    width: auto !important;
 }
 
 .msg-con{
