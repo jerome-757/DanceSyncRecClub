@@ -31,7 +31,7 @@ const RegistrationScreen = () => {
     const { firstName, lastName, email, username, password, role } = formState;
 
     // Send data to backend for registration
-    axios.post('http://localhost:3001/register', {
+    axios.post('https://dancesyncrecclub-production.up.railway.app/register', {
       firstName,
       lastName,
       email,

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';    // QRCode改成{ QRCodeSVG }
 // import { QRCodeCanvas } from 'qrcode.react';   // 如果{ QRCodeSVG }还不行，可以用 Canvas 版本（在某些环境下更稳定）
-const API_BASE = 'http://localhost:3001';
+const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
 
 const MemberCard = () => {
     const navigate = useNavigate();

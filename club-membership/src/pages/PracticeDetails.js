@@ -14,7 +14,7 @@ const PracticeDetails = () => {
     
     useEffect(() => {
         if (user.role === 'admin') {
-            axios.get('http://localhost:3001/coachs')
+            axios.get('https://dancesyncrecclub-production.up.railway.app/coachs')
                 .then(response => {
                     console.log(response.data); // Log to check the response data
                     setCoaches(response.data);
@@ -24,7 +24,7 @@ const PracticeDetails = () => {
                 });
         }
         if (user.role === 'coach') {
-            axios.get('http://localhost:3001/members')
+            axios.get('https://dancesyncrecclub-production.up.railway.app/members')
                 .then(response => setMembers(response.data))
                 .catch(error => console.error('Failed to fetch members:', error));
         }

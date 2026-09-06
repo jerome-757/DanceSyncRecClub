@@ -12,7 +12,7 @@ const Notifications = () => {
         // Function to fetch messages from the server
         const fetchMessages = async () => {
             try {
-                const response = await axios.get("http://localhost:3001/message-center");
+                const response = await axios.get("https://dancesyncrecclub-production.up.railway.app/message-center");
                 // Reverse the order of messages array
                 const reversedMessages = response.data.reverse();
                 setMessages(reversedMessages);

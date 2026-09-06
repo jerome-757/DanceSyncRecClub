@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = "http://localhost:3001";
+const API_BASE = "https://dancesyncrecclub-production.up.railway.app";
 
 const MembersManagement = () => {
     const [members, setMembers] = useState([]);

@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:3001';
+const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
 
 const AdminFinances = () => {
     const navigate = useNavigate();

@@ -18,7 +18,7 @@ const CommunicationCenter = () => {
     useEffect(() => {
         // Fetch messages from the server when the component mounts
         axios
-            .get("http://localhost:3001/message-center")
+            .get("https://dancesyncrecclub-production.up.railway.app/message-center")
             .then((response) => {
                 // Reverse the order of messages array
                 const reversedMessages = response.data.reverse();
@@ -37,7 +37,7 @@ const CommunicationCenter = () => {
         sender += " (Admin)";
 
         axios
-            .post("http://localhost:3001/message-center", {
+            .post("https://dancesyncrecclub-production.up.railway.app/message-center", {
                 sender,
                 message,
             })
@@ -52,7 +52,7 @@ const CommunicationCenter = () => {
                     message: "",
                 });
                 axios
-                    .get("http://localhost:3001/message-center")
+                    .get("https://dancesyncrecclub-production.up.railway.app/message-center")
                     .then((response) => {
                         // Reverse the order of messages array
                         const reversedMessages = response.data.reverse();

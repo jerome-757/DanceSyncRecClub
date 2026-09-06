@@ -33,7 +33,7 @@ export const CoachLogin = () => {
     
         const { username, password } = credentials;
     
-        axios.post('http://localhost:3001/api/coach-login', { username, password })
+        axios.post('https://dancesyncrecclub-production.up.railway.app/api/coach-login', { username, password })
             .then(res => {
                 console.log('登录响应:', res.data);
                 if (res.data.code === 0) {

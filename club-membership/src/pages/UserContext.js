@@ -13,7 +13,7 @@ export const UserProvider = ({ children }) => {
 
     const login = async (username, password, role) => {
         try {
-            const response = await fetch(`http://localhost:3001/validate-${role}-password`, {
+            const response = await fetch(`https://dancesyncrecclub-production.up.railway.app/validate-${role}-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

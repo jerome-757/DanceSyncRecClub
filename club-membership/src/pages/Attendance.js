@@ -11,7 +11,7 @@ const Attendance = () => {
     useEffect(() => {
         const fetchMembers = async () => {
             try {
-                const response = await axios.get("http://localhost:3001/member-management-list");
+                const response = await axios.get("https://dancesyncrecclub-production.up.railway.app/member-management-list");
                 setMembers(response.data);
             } catch (error) {
                 console.error("Error fetching members:", error);
