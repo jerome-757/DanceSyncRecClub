@@ -60,6 +60,7 @@ env/
 venv/
 vendor/
 zz/
+build11/
 playlists_config.json
 
 # Local env files

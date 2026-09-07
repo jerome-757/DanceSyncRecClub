@@ -256,7 +256,7 @@ const MemberCard = () => {
                             cards.map((card) => (
                                 <div key={card.id} className="bg-white rounded-xl shadow-md p-4 flex items-center justify-between">
                                     <div>
-                                        <div className="font-bold text-lg">{card.card_category}</div>
+                                        <div className="font-bold text-lg">{card.name}</div>
                                         {card.card_category === 'fixed' ? (
                                             <div className="text-sm text-gray-600">
                                                 剩余: <span className="font-bold text-blue-600">{card.remaining_count}</span> 次
@@ -300,7 +300,7 @@ const MemberCard = () => {
                                 {history.map((item) => (
                                     <div key={item.id} className="flex justify-between items-center border-b pb-2">
                                         <div>
-                                            <div className="font-medium">{item.card_category || '未知卡'}</div>
+                                            <div className="font-medium">{item.name || '未知卡'}</div>
                                             <div className="text-xs text-gray-400">{item.consume_date}</div>
                                         </div>
                                         <div>
@@ -381,7 +381,7 @@ const MemberCard = () => {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">次卡</span>
-                                    <span className="font-bold">{selectedCard.card_category}</span>
+                                    <span className="font-bold">{selectedCard.name}</span>
                                 </div>
                                 {selectedCard.card_category === 'unlimited' && (
                                     <div className="text-sm text-green-600">🔄 月卡不限次，签到成功</div>

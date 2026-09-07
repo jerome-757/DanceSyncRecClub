@@ -7,13 +7,15 @@ const RegistrationScreen = () => {
   const [formState, setFormState] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    phone: '',
+    code: '',
     username: '',
     password: '',
     role: 'member', // Default to 'member'
   });
 
   const [errorMessage, setErrorMessage] = useState('');
+  const [countdown, setCountdown] = useState(0);
 
   const navigate = useNavigate(); // Step 2: Create an instance of navigate
 
@@ -25,16 +27,41 @@ const RegistrationScreen = () => {
     }));
   };
 
+  const sendVerificationCode = () => {
+    if (!formState.phone || formState.phone.length < 11) {
+      alert('请输入正确的手机号');
+      return;
+    }
+    // 测试模式：固定验证码 1234
+    alert('验证码已发送（测试固定码: 1234）');
+    setCountdown(60);
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const { firstName, lastName, email, username, password, role } = formState;
+    // 验证验证码
+    if (formState.code !== '1234') {
+      alert('验证码错误');
+      return;
+    }
+
+    const { firstName, lastName, phone, username, password, role } = formState;
 
     // Send data to backend for registration
     axios.post('https://dancesyncrecclub-production.up.railway.app/register', {
       firstName,
       lastName,
-      email,
+      phone,
       username,
       password,
       role
@@ -98,16 +125,44 @@ const RegistrationScreen = () => {
               </label>
             </div>
             <br />
-            <label>
-              <input
+              {/* <input
                 className=' w-96 h-12 rounded-2xl px-5 border-black focus:outline-none bg-blue-100'
                 type="email"
                 name="email"
                 placeholder='Email'
                 value={formState.email}
                 onChange={handleChange}
+                required /> */}
+            <label>
+              <input
+                className=' w-96 h-12 rounded-2xl px-5 border-black focus:outline-none bg-blue-100'
+                type="tel"
+                name="phone"
+                placeholder='手机号'
+                value={formState.phone}
+                onChange={handleChange}
                 required />
             </label>
+            <br />
+            <div className='flex gap-3 w-96'>
+              <input
+                className='flex-1 h-12 rounded-2xl px-5 border-black focus:outline-none bg-blue-100'
+                type="text"
+                name="code"
+                placeholder='验证码'
+                value={formState.code}
+                onChange={handleChange}
+                required />
+              <button
+                type="button"
+                className='px-4 h-12 rounded-2xl bg-blue-500 text-white hover:bg-blue-600 transition whitespace-nowrap'
+                onClick={sendVerificationCode}
+                disabled={countdown > 0}
+              >
+                {countdown > 0 ? `${countdown}s` : '获取验证码'}
+              </button>
+            </div>
+
             <br />
             <label>
               <input
@@ -147,29 +202,31 @@ const RegistrationScreen = () => {
               </div>
               <div>
                 <input
-                  className='radio'
+                  className='radio opacity-50 cursor-not-allowed'
                   type="radio"
                   id="coach"
                   name="role"
                   value="coach"
-                  checked={formState.role === "coach"}
-                  onChange={handleChange}
-                  required
+                  // checked={formState.role === "coach"}
+                  // onChange={handleChange}
+                  // required
+                  disabled
                 />
-                <label htmlFor="coach">Coach</label>
+                <label htmlFor="coach" className='opacity-50'>Coach</label>
               </div>
               <div>
                 <input
-                  className='radio'
+                  className='radio opacity-50 cursor-not-allowed'
                   type="radio"
                   id="admin"
                   name="role"
                   value="admin"
-                  checked={formState.role === "admin"}
-                  onChange={handleChange}
-                  required
+                  // checked={formState.role === "admin"}
+                  // onChange={handleChange}
+                  // required
+                  disabled
                 />
-                <label htmlFor="admin">Admin</label>
+                <label htmlFor="admin" className='opacity-50'>Admin</label>
               </div>
             </label>
           </div>

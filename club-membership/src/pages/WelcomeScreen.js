@@ -9,7 +9,7 @@ const WelcomeScreen = () => {
   return (
     <div className=" bg-white w-screen flex flex-col text-center">
       <Navbar />
-      <div className=' min-h-[1200px] py-20 flex flex-row w-full bg-gray-600 items-center justify-around contain-content'>
+      <div className=' min-h-[800px] py-20 flex flex-row w-full bg-gray-600 items-center justify-around contain-content'>
         {/* <img className='absolute w-full h-full ' src="https://wallpapers.com/images/hd/dance-studio-background-ny1jrb561lvx59gx.jpg" alt='dancers' /> */}
         {/* <img className='absolute w-full h-full ' src={MyBackground} alt='dancers' /> */}
         {/* <img className='absolute w-full h-full object-cover' src={MyBackground} alt='dancers' /> */}
@@ -55,7 +55,7 @@ const WelcomeScreen = () => {
           <br></br>
           So come join us at XING FA dance club, where every step brings us closer together and every beat keeps us moving forward. Let's dance!
           </p>
-          <img className=' w-[500px] h-auto' src={Hiphop} alt="dancer" />
+          <img className=' w-[300px] h-auto' src={Hiphop} alt="dancer" />
         </div>
       </div>
       <Footer />

@@ -1455,13 +1455,15 @@ app.get('/api/scan/history/:memberNo', (req, res) => {
                 let completed = 0;
                 rows.forEach((row, index) => {
                     cardsDB.get(
-                        `SELECT card_category FROM membership_cards WHERE id = ?`,
+                        `SELECT card_category, name FROM membership_cards WHERE id = ?`,
                         [row.card_id],
                         (err3, card) => {
                             if (!err3 && card) {
                                 rows[index].card_category = card.card_category;
+                                rows[index].name = card.name;
                             } else {
                                 rows[index].card_category = '未知卡';
+                                rows[index].name = '未知卡';
                             }
                             completed++;
                             if (completed === rows.length) {
