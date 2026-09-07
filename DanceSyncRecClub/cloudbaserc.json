@@ -1,0 +1,17 @@
+{
+  "version": "2.0",
+  "envId": "dance-club-d9g5g1rfp2757dbff",
+  "framework": {
+    "name": "DanceSyncRecClub",
+    "plugins": {
+      "node": {
+        "use": "@cloudbase/framework-plugin-node",
+        "inputs": {
+          "name": "DanceSyncRecClub",
+          "path": "/",
+          "entry": "app.js"
+        }
+      }
+    }
+  }
+}

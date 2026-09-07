@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd club-membership && npm run build",
+  "outputDirectory": "club-membership/build",
+  "installCommand": "cd club-membership && npm install",
+  "framework": "create-react-app"
+}

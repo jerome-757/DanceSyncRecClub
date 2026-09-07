@@ -2,9 +2,7 @@
   "name": "react-first-project",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": "24.x"
-  },
+
   "dependencies": {
     "@craco/craco": "^7.1.0",
     "@testing-library/jest-dom": "^5.17.0",
@@ -24,17 +22,20 @@
     "styled-components": "^6.1.8",
     "web-vitals": "^2.1.4"
   },
+
   "scripts": {
     "start": "react-scripts start",
     "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
     ]
+  
   },
   "browserslist": {
     "production": [
@@ -47,6 +48,7 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  
   },
   "devDependencies": {
     "tailwindcss": "^3.4.3"
