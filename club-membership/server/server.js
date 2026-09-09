@@ -7,8 +7,8 @@ const path = require('path');
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data');  // Railway 线上	/app/data	数据库在 Volume 里
-const DB_PATH = process.env.DB_PATH || __dirname;  // 本地	__dirname	数据库在 server 目录下（和 .db 文件同级）
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data');  // Railway 线上	/app/data	数据库在 Volume 里
+// const DB_PATH = process.env.DB_PATH || __dirname;  // 本地	__dirname	数据库在 server 目录下（和 .db 文件同级）
 
 // ============================================================
 // 数据库连接
@@ -1463,13 +1463,10 @@ app.get('/api/scan/history/:memberNo', (req, res) => {
                 // 第二步：逐条查询卡信息
                 let completed = 0;
                 rows.forEach((row, index) => {
-                    console.log('cardsDB 路径:', path.join(DB_PATH, 'membership_cards.db'));
-                    rows[index].db_path = path.join(DB_PATH, 'membership_cards.db');
                     cardsDB.get(
                         `SELECT name, remaining_after, used_after FROM membership_cards WHERE id = ?`,
                         [row.card_id],
                         (err3, card) => {
-                            rows[index].card_raw = card;  // 添加这行
                             if (!err3 && card) {
                                 // rows[index].card_category = card.card_category;
                                 rows[index].name = card.name;
@@ -1483,7 +1480,6 @@ app.get('/api/scan/history/:memberNo', (req, res) => {
                             }
                             completed++;
                             if (completed === rows.length) {
-                                console.log('查询前的 row.card_id:', row.card_id);
                                 success(res, rows);
                             }
                         }
