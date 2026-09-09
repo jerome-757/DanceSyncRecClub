@@ -69,6 +69,7 @@ const MemberCard = () => {
             // 获取消费历史（增加limit获取更多记录，确保包含剩余和已用数据）
             const historyRes = await axios.get(`${API_BASE}/api/scan/history/${memberNo}?limit=15`);
             if (historyRes.data.code === 0) {
+                console.log('历史记录原始数据:', historyRes.data.data);
                 setHistory(historyRes.data.data);
             }
         } catch (error) {
@@ -264,7 +265,7 @@ const MemberCard = () => {
                             </div>
                         ) : (
                             cards.filter(card => card.status === '有效').map((card) => (
-                                <div key={card.id} className="bg-white rounded-xl shadow-md p-4 grid grid-cols-[0.8fr_1.4fr_0.8fr] items-center gap-2">
+                                <div key={card.id} className="bg-white rounded-xl shadow-md p-4 grid grid-cols-[1.0fr_1.4fr_0.6fr] items-center gap-2">
                                     {/* 第一列：卡名 + 状态 + 购买日期 + 有效期限 */}
                                     <div>
                                         <div className="flex items-center gap-2">
@@ -282,8 +283,8 @@ const MemberCard = () => {
                                     <div className="text-center">
                                         {card.card_category === 'fixed' ? (
                                             <div className="text-lg text-gray-600">
-                                                剩余: <span className="font-bold text-blue-600">{card.remaining_after}</span> 次
-                                                / 已用: {card.used_after} 次
+                                                剩余: <span className="font-bold text-blue-600">{card.remaining_count}</span> 次
+                                                / 已用: {card.used_count} 次
                                             </div>
                                         ) : (
                                             <div className="text-sm text-gray-600">🔄 期限卡不限次</div>
@@ -293,7 +294,7 @@ const MemberCard = () => {
                                     <div className="text-right">
                                         {card.status === '有效' && (
                                             <button
-                                                className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg text-base font-medium transition"
+                                                className="px-3 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg text-base font-medium transition"
                                                 onClick={() => handleConsume(card)}
                                             >
                                                 ✅ 签到
