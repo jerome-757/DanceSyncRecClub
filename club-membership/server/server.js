@@ -23,6 +23,9 @@ const membersDB = new sqlite3.Database(path.join(DB_PATH, 'members.db'));
 const transactionsDB = new sqlite3.Database(path.join(DB_PATH, 'transactions.db'));
 const attendanceDB = new sqlite3.Database(path.join(DB_PATH, 'attendance_records.db'));
 const cardTypesDB = new sqlite3.Database(path.join(DB_PATH, 'card_types.db'));
+const cardsDB = new sqlite3.Database(path.join(__dirname, 'data', 'membership_cards.db'));
+console.log('cardsDB 实际路径:', path.join(__dirname, 'data', 'membership_cards.db'));
+const scanDB = new sqlite3.Database(path.join(DB_PATH, 'scan_consumptions.db'));
 
 
 // ============================================================
@@ -1134,8 +1137,6 @@ app.post('/api/finances/auto-record-fixed', (req, res) => {
 // 会员卡/次卡/扫码消费接口
 // ============================================================
 
-const cardsDB = new sqlite3.Database(path.join(DB_PATH, 'membership_cards.db'));
-const scanDB = new sqlite3.Database(path.join(DB_PATH, 'scan_consumptions.db'));
 
 // 1. 获取会员的次卡列表
 app.get('/api/member-cards/:memberId', (req, res) => {
@@ -1461,18 +1462,21 @@ app.get('/api/scan/history/:memberNo', (req, res) => {
                 }
 
 
-                // 第二步：逐条查询卡信息
+                // 第二步：逐条查询卡信息，membership_cards 表只需要查 name，不需要查 remaining_after 和 used_after。这两个字段在 scan_consumptions 表里。
                 let completed = 0;
                 rows.forEach((row, index) => {
                     cardsDB.get(
-                        `SELECT name, remaining_after, used_after FROM membership_cards WHERE id = ?`,
+                        `SELECT name FROM membership_cards WHERE id = ?`,
                         [row.card_id],
                         (err3, card) => {
+                            // console.log('err3:', err3);
+                            // console.log('card:', card);
                             if (!err3 && card) {
                                 // rows[index].card_category = card.card_category;
                                 rows[index].name = card.name;
-                                rows[index].remaining_count = card.remaining_after;
-                                rows[index].used_count = card.used_after;
+                                // console.log('赋值后的 rows[index].name:', rows[index].name);
+                                rows[index].remaining_count = row.remaining_after; // 从 row 取
+                                rows[index].used_count = row.used_after;
                             } else {
                                 // rows[index].card_category = '未知卡';
                                 rows[index].name = '未知卡';
@@ -1481,6 +1485,10 @@ app.get('/api/scan/history/:memberNo', (req, res) => {
                             }
                             completed++;
                             if (completed === rows.length) {
+                                // console.log('card 对象:', card);
+                                // console.log('当前 row 完整:', row);
+                                // console.log('card_id 值:', row.card_id);
+                                // console.log('最终返回的 rows:', JSON.stringify(rows, null, 2));                                
                                 success(res, rows);
                             }
                         }
