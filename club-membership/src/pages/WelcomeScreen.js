@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import Hiphop from '../assets/xiaowu.jpg';
+import Xiaowu from '../assets/xiaowu.jpg';
 import Footer from '../components/Footer';
-import MyBackground from '../assets/wuting.jpg';
+import MyBackground from '../assets/xfdanceclub.jpg';
 
 const WelcomeScreen = () => {
   return (
@@ -55,7 +55,7 @@ const WelcomeScreen = () => {
           <br></br>
           So come join us at XING FA dance club, where every step brings us closer together and every beat keeps us moving forward. Let's dance!
           </p>
-          <img className=' w-[300px] h-auto' src={Hiphop} alt="dancer" />
+          <img className=' w-[300px] h-auto' src={Xiaowu} alt="dancer" />
         </div>
       </div>
       <Footer />

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/index.css'
-import Dancers from '../assets/dancers.png'
+import Dancers from '../assets/clubmember.jpg'
 import axios from 'axios';
 import { useUser } from './UserContext';
 
@@ -101,7 +101,7 @@ export const Login = () => {
                         </div>
                     </div>
                 </form>
-                <div className='flex-3 w-full h-full'>
+                <div className='flex-3 w-full h-full flex items-center justify-center'>
                     <img src={Dancers} alt="dancers" className=' object-cover' />
                 </div>
             </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/index.css'
-import Dancers from '../assets/dancers.png'
+import Dancers from '../assets/adminzhu.jpg'
 import axios from 'axios';
 import { useUser } from './UserContext';
 

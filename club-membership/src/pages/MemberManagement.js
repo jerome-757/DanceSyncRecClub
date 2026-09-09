@@ -18,9 +18,75 @@ const MembersManagement = () => {
     const navigate = useNavigate();
     const [cardTypes, setCardTypes] = useState([]);  // 可用卡种列表
     const [selectedCardType, setSelectedCardType] = useState(null);
+    const [showAttendancePopup, setShowAttendancePopup] = useState(false);
+    const [attendanceHistory, setAttendanceHistory] = useState([]);
+    const [attendanceMember, setAttendanceMember] = useState(null);
+    const [attendanceType, setAttendanceType] = useState(''); // 'monthly' 或 'all'
+    const formatBeijingTime = (dateStr) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const beijingTime = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+        return beijingTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    };
 
     const handleBack = () => {
         navigate(-1);
+    };
+
+    // ===== 获取签到记录 =====
+    const openAttendanceHistory = async (member, type) => {
+        setAttendanceMember(member);
+        setAttendanceType(type);
+        setShowAttendancePopup(true);
+        
+        try {
+            // 获取该会员的签到记录
+            const [historyRes, cardsRes] = await Promise.all([
+                axios.get(`${API_BASE}/api/scan/history/${member.member_no}?limit=50`),
+                axios.get(`${API_BASE}/api/member-cards/${member.id}`)
+            ]);
+
+            if (historyRes.data.code === 0) {
+                let data = historyRes.data.data || [];
+                const cards = cardsRes.data.data || [];
+
+                // 合并卡数据
+                data = data.map(item => {
+                    const card = cards.find(c => c.id === item.card_id);
+                    return {
+                        ...item,
+                        name: card?.name || '未知卡',
+                        remaining_count: card?.remaining_count || 0,
+                        used_count: card?.used_count || 0
+                    };
+                });
+
+                if (type === 'monthly') {
+                    // 过滤本月记录
+                    const now = new Date();
+                    const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+                    const currentYear = now.getFullYear();
+                    data = data.filter(item => {
+                        const dateParts = item.consume_date.split('-');
+                        return dateParts[0] === String(currentYear) && dateParts[1] === currentMonth;
+                    });
+                }
+
+            console.log('签到记录数据:', data);
+                setAttendanceHistory(data);
+            } else {
+                setAttendanceHistory([]);
+            }
+        } catch (error) {
+            console.error('获取签到记录失败:', error);
+            setAttendanceHistory([]);
+        }
+    };
+
+    const closeAttendancePopup = () => {
+        setShowAttendancePopup(false);
+        setAttendanceHistory([]);
+        setAttendanceMember(null);
     };
 
     // ===== 获取会员列表 =====
@@ -537,10 +603,22 @@ const MembersManagement = () => {
                                                         {member.status || "冻结"}
                                                     </span>
                                                 </td>
-                                                <td className="p-5 text-center font-bold text-blue-600 text-lg">
+                                                {/* <td className="p-5 text-center font-bold text-blue-600 text-lg">
                                                     {member.monthly_attendance || 0} 次
                                                 </td>
                                                 <td className="p-5 text-center text-gray-700 text-lg">
+                                                    {member.total_attendance || 0} 次
+                                                </td> */}
+                                                <td 
+                                                    className="p-5 text-center font-bold text-blue-600 text-lg cursor-pointer hover:underline"
+                                                    onClick={() => openAttendanceHistory(member, 'monthly')}
+                                                >
+                                                    {member.monthly_attendance || 0} 次
+                                                </td>
+                                                <td 
+                                                    className="p-5 text-center text-gray-700 text-lg cursor-pointer hover:underline"
+                                                    onClick={() => openAttendanceHistory(member, 'all')}
+                                                >
                                                     {member.total_attendance || 0} 次
                                                 </td>
                                                 <td className="p-5 text-center font-bold text-orange-600 text-lg">
@@ -592,6 +670,74 @@ const MembersManagement = () => {
             </div>
 
             <Footer />
+
+            {/* ===== 签到记录弹窗 ===== */}
+            {showAttendancePopup && attendanceMember && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                    onClick={closeAttendancePopup}
+                >
+                    <div
+                        className="bg-white rounded-2xl p-6 w-[700px] max-w-[95%] max-h-[80vh] overflow-y-auto shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-gray-800">
+                                📋 {attendanceMember.name} 的签到记录
+                                <span className="text-sm font-normal text-gray-500 ml-2">
+                                    ({attendanceType === 'monthly' ? '本月' : '全部'}，共 {attendanceHistory.length} 条)
+                                </span>
+                            </h2>
+                            <button onClick={closeAttendancePopup} className="text-red-500 hover:text-red-700 text-3xl leading-none">
+                                &times;
+                            </button>
+                        </div>
+
+                        {attendanceHistory.length === 0 ? (
+                            <div className="text-center py-8 text-gray-400 text-lg">
+                                📭 暂无签到记录
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {/* 标题行 */}
+                                <div className="flex justify-between items-center border-b-2 border-gray-300 pb-2 font-bold text-gray-600 text-sm">
+                                    <div className="flex-1 text-center">卡项名称</div>
+                                    <div className="flex-1 text-center">剩余/已用</div>
+                                    <div className="flex-1 text-center">扣票数量</div>
+                                    <div className="flex-1 text-center">签到方式</div>
+                                    <div className="flex-1 text-center">签到时间</div>
+                                </div>
+                                {attendanceHistory.map((item) => (
+                                    <div key={item.id} className="flex justify-between items-center border-b pb-2">
+                                        <div className="flex-1 text-center font-medium text-pink-300">{item.name || '未知卡'}</div>
+                                        <div className="flex-1 text-center text-sm">
+                                            <span className="text-blue-600 font-bold">{item.remaining_after || 0}</span>次/<span className="text-orange-600 font-bold">{item.used_after || 0}</span>次
+                                        </div>
+                                        <div className="flex-1 text-center text-sm text-purple-600">
+                                            {item.consume_count > 0 ? `扣${item.consume_count}次` : '月卡签到'}
+                                        </div>
+                                        <div className="flex-1 text-center text-xs text-cyan-400">
+                                            {item.source === 'user' ? '手机自扫' : '前台机扫'}
+                                        </div>
+                                        <div className="flex-1 text-center text-xs text-gray-400">
+                                            {item.consume_date.slice(5)} {formatBeijingTime(item.created_at).slice(0, 5)}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="mt-4 flex justify-end">
+                            <button
+                                onClick={closeAttendancePopup}
+                                className="px-6 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg transition font-medium"
+                            >
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ===== 添加会员弹窗 ===== */}
             {showAddPopup && (

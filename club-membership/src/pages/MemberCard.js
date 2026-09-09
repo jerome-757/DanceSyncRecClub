@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';    // QRCode改成{ QRCodeSVG }
 // import { QRCodeCanvas } from 'qrcode.react';   // 如果{ QRCodeSVG }还不行，可以用 Canvas 版本（在某些环境下更稳定）
-const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
+const API_BASE = 'https://dancesyncrecclub-production.up.railway.app'; // 服务器
+// const API_BASE = 'http://localhost:3001';  // 本地
 
 const MemberCard = () => {
     const navigate = useNavigate();
@@ -17,6 +18,12 @@ const MemberCard = () => {
     const [consumeCount, setConsumeCount] = useState(1);
     const [consuming, setConsuming] = useState(false);
     const [activeTab, setActiveTab] = useState('cards');
+    const formatBeijingTime = (dateStr) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const beijingTime = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+        return beijingTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    };
 
     // 检查缓存
     useEffect(() => {
@@ -59,8 +66,8 @@ const MemberCard = () => {
                 alert('获取会员信息失败: ' + res.data.message);
             }
 
-            // 获取消费历史
-            const historyRes = await axios.get(`${API_BASE}/api/scan/history/${memberNo}?limit=10`);
+            // 获取消费历史（增加limit获取更多记录，确保包含剩余和已用数据）
+            const historyRes = await axios.get(`${API_BASE}/api/scan/history/${memberNo}?limit=15`);
             if (historyRes.data.code === 0) {
                 setHistory(historyRes.data.data);
             }
@@ -146,6 +153,12 @@ const MemberCard = () => {
         setConsuming(false);
     };
 
+    // 获取今日签到记录
+    const getTodayHistory = () => {
+        const today = new Date().toISOString().slice(0, 10);
+        return history.filter(item => item.consume_date === today);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -164,6 +177,8 @@ const MemberCard = () => {
 
     // 构建二维码URL（前台扫码枪用）
     const qrUrl = `${window.location.origin}/member-card/${member.member_no}`;
+
+    const todayHistory = getTodayHistory();
 
     return (
         <div className="min-h-screen bg-gray-100 p-4 pb-20">
@@ -187,22 +202,20 @@ const MemberCard = () => {
                     </div>
                 </div> */}
 
-                {/* ===== 会员信息卡片 ===== */}
+                {/* ===== 会员信息卡片（无二维码，文字放大） ===== */}
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-6 text-white mb-4">
                     <div className="flex justify-between items-start">
-                        <div>
-                            {/* 会员编号 */}
+                        {/* 第一列：姓名、昵称、手机号 */}
+                        <div className="flex-1">
+                            <div className="text-2xl font-bold">{member.name || '未设置'}</div>
+                            <div className="text-base opacity-80 mt-1">昵称：{member.nickname || '未设置'}</div>
+                            <div className="text-base opacity-80">{member.phone || ''}</div>
+                        </div>
+                        {/* 第二列：会员编号、卡状态 */}
+                        <div className="flex-1 text-right">
                             <div className="text-sm opacity-80">会员编号</div>
                             <div className="text-xl font-mono font-bold">{member.member_no || '未设置'}</div>
-                            {/* 姓名 */}
-                            <div className="text-2xl font-bold mt-2">{member.name || '未设置'}</div>
-                            {/* 昵称 */}
-                            <div className="text-sm opacity-80">昵称：{member.nickname || '未设置'}</div>
-                            <div className="text-sm opacity-80 mt-1">{member.phone || ''}</div>
-                        </div>
-                        <div className="text-right">
-                            {/* 状态 - 直接使用数据库值 */}
-                            <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                            <span className={`inline-block mt-2 px-4 py-1 rounded-full text-base font-bold ${
                                 member.status === '活跃' ? 'bg-green-500 text-white' :
                                 member.status === '冻结' ? 'bg-yellow-500 text-white' :
                                 member.status === '过期' ? 'bg-red-500 text-white' :
@@ -210,9 +223,6 @@ const MemberCard = () => {
                             }`}>
                                 {member.status || '冻结'}
                             </span>
-                            {/* 有效期 */}
-                            <div className="text-sm opacity-80 mt-1">有效期：{member.expiry_date || '未设置'}</div>
-                            <div className="text-xs opacity-60 mt-1">缓存：{getCacheRemaining()}</div>
                         </div>
                     </div>
                 </div>
@@ -225,15 +235,7 @@ const MemberCard = () => {
                         }`}
                         onClick={() => setActiveTab('cards')}
                     >
-                        📋 次卡
-                    </button>
-                    <button
-                        className={`flex-1 py-3 text-center rounded-xl font-medium transition ${
-                            activeTab === 'history' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'
-                        }`}
-                        onClick={() => setActiveTab('history')}
-                    >
-                        📜 记录
+                        📋 签到
                     </button>
                     <button
                         className={`flex-1 py-3 text-center rounded-xl font-medium transition ${
@@ -243,40 +245,55 @@ const MemberCard = () => {
                     >
                         📱 二维码
                     </button>
+                    <button
+                        className={`flex-1 py-3 text-center rounded-xl font-medium transition ${
+                            activeTab === 'history' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                        onClick={() => setActiveTab('history')}
+                    >
+                        📜 历史记录
+                    </button>
                 </div>
 
                 {/* ===== 次卡列表 ===== */}
                 {activeTab === 'cards' && (
                     <div className="space-y-3">
-                        {cards.length === 0 ? (
+                        {cards.filter(card => card.status === '有效').length === 0 ? (
                             <div className="bg-white rounded-xl shadow-md p-8 text-center text-gray-400">
-                                🎴 暂无次卡，请联系前台购买
+                                🎴 暂无有效次卡，请联系前台购买
                             </div>
                         ) : (
-                            cards.map((card) => (
-                                <div key={card.id} className="bg-white rounded-xl shadow-md p-4 flex items-center justify-between">
+                            cards.filter(card => card.status === '有效').map((card) => (
+                                <div key={card.id} className="bg-white rounded-xl shadow-md p-4 grid grid-cols-[0.8fr_1.4fr_0.8fr] items-center gap-2">
+                                    {/* 第一列：卡名 + 状态 + 购买日期 + 有效期限 */}
                                     <div>
-                                        <div className="font-bold text-lg">{card.name}</div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-lg">{card.name}</span>
+                                            <span className={`text-xs px-2 py-1 rounded ${
+                                                card.status === '有效' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                            }`}>
+                                                {card.status}
+                                            </span>
+                                        </div>
+                                        <div className="text-xs text-gray-400">购买日期: {card.purchase_date}</div>
+                                        <div className="text-xs text-gray-400">有效期限: {card.expiry_date || '永久'}</div>
+                                    </div>
+                                    {/* 第二列：剩余/已用 */}
+                                    <div className="text-center">
                                         {card.card_category === 'fixed' ? (
-                                            <div className="text-sm text-gray-600">
-                                                剩余: <span className="font-bold text-blue-600">{card.remaining_count}</span> 次
-                                                / 已用: {card.used_count} 次
+                                            <div className="text-lg text-gray-600">
+                                                剩余: <span className="font-bold text-blue-600">{card.remaining_after}</span> 次
+                                                / 已用: {card.used_after} 次
                                             </div>
                                         ) : (
                                             <div className="text-sm text-gray-600">🔄 期限卡不限次</div>
                                         )}
-                                        <div className="text-xs text-gray-400">有效期: {card.expiry_date || '永久'}</div>
-                                        <div className="text-xs text-gray-400">购买: {card.purchase_date}</div>
                                     </div>
+                                    {/* 第三列：签到按钮 */}
                                     <div className="text-right">
-                                        <span className={`text-xs px-2 py-1 rounded ${
-                                            card.status === '有效' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                        }`}>
-                                            {card.status}
-                                        </span>
                                         {card.status === '有效' && (
                                             <button
-                                                className="block mt-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition"
+                                                className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg text-base font-medium transition"
                                                 onClick={() => handleConsume(card)}
                                             >
                                                 ✅ 签到
@@ -285,6 +302,27 @@ const MemberCard = () => {
                                     </div>
                                 </div>
                             ))
+                        )}
+
+                        {/* ===== 今日签到记录（只在签到页面显示） ===== */}
+                        {todayHistory.length > 0 && (
+                            <div className="bg-white rounded-xl shadow-md p-4 mt-4">
+                                <h4 className="font-bold text-gray-700 mb-2">📋 今日签到记录</h4>
+                                <div className="space-y-1">
+                                    <div className="text-sm flex justify-between border-b pb-1 font-medium text-gray-800">
+                                        <span className="w-1/3 text-center">卡项名称</span>
+                                        <span className="w-1/3 text-center">购票数量</span>
+                                        <span className="w-1/3 text-center">签到时间</span>
+                                    </div>
+                                    {todayHistory.map((item) => (
+                                        <div key={item.id} className="text-sm flex justify-between border-b pb-1 last:border-0">
+                                            <span className="w-1/3 text-center text-gray-700">{item.name || '未知卡'}</span>
+                                            <span className="w-1/3 text-center text-gray-600">{item.consume_count > 0 ? `${item.consume_count}张` : '月卡'}</span>
+                                            <span className="w-1/3 text-center text-gray-500">{item.consume_date.slice(5)} {formatBeijingTime(item.created_at).slice(0, 5)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         )}
                     </div>
                 )}
@@ -297,17 +335,37 @@ const MemberCard = () => {
                             <div className="text-center text-gray-400 py-4">暂无消费记录</div>
                         ) : (
                             <div className="space-y-2 max-h-96 overflow-auto">
+                                {/* 固定标题行 */}
+                                <div className="flex justify-between items-center border-b-2 border-gray-300 pb-2 mb-2 font-bold text-gray-600 text-sm">
+                                <div className="flex-1 text-center">卡项名称</div>
+                                    <div className="flex-1 text-center">剩余/已用</div>
+                                    <div className="flex-1 text-center">扣票数量</div>
+                                    <div className="flex-1 text-center">签到方式</div>
+                                    <div className="flex-1 text-center">签到时间</div>
+                                </div>
                                 {history.map((item) => (
                                     <div key={item.id} className="flex justify-between items-center border-b pb-2">
-                                        <div>
-                                            <div className="font-medium">{item.name || '未知卡'}</div>
-                                            <div className="text-xs text-gray-400">{item.consume_date}</div>
+                                        <div className="flex-1 text-center">
+                                            <div className="font-medium text-pink-300">
+                                                {item.name || '未知卡'}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <span className="text-sm text-gray-600">
+                                            <div className="flex-1 text-center">
+                                                <span className="text-sm">
+                                                <span className="text-blue-600 font-bold">{item.remaining_after || 0}</span>次/<span className="text-orange-600 font-bold">{item.used_after || 0}</span>次
+                                            </span>
+                                        </div>
+                                            <div className="flex-1 text-center">
+                                            <span className="text-sm text-purple-600">
                                                 {item.consume_count > 0 ? `扣${item.consume_count}次` : '月卡签到'}
                                             </span>
-                                            <span className="text-xs text-gray-400 ml-2">{item.source === 'user' ? '手机' : '前台'}</span>
+                                        </div>
+                                        <div className="flex-1 text-center text-xs text-cyan-400">{item.source === 'user' ? '手机自扫' : '前台机扫'}
+                                        </div>
+                                        {/* <div className="text-xs text-gray-400">{item.consume_date}    
+                                        {item.created_at ? new Date(item.created_at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}</div> */}
+                                        {/* <div className="flex-1 text-center text-xs text-gray-400">{item.consume_date} {formatBeijingTime(item.created_at)} */}
+                                        <div className="flex-1 text-center text-xs text-gray-400">{item.consume_date.slice(5)} {formatBeijingTime(item.created_at).slice(0, 5)}
                                         </div>
                                     </div>
                                 ))}
@@ -338,7 +396,7 @@ const MemberCard = () => {
                                 bgColor="#ffffff"
                                 fgColor="#000000"
                             // <QRCodeCanvas value={qrUrl} size={200} level="H" includeMargin={true} />
-/>
+                            />
                         </div>
                         <div className="mt-3 font-mono text-sm text-gray-500">{member.member_no}</div>
                         <button

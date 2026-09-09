@@ -138,7 +138,7 @@ const RegistrationScreen = () => {
                 className=' w-96 h-12 rounded-2xl px-5 border-black focus:outline-none bg-blue-100'
                 type="tel"
                 name="phone"
-                placeholder='手机号'
+                placeholder='Phone Number'
                 value={formState.phone}
                 onChange={handleChange}
                 required />
@@ -146,20 +146,20 @@ const RegistrationScreen = () => {
             <br />
             <div className='flex gap-3 w-96'>
               <input
-                className='flex-1 h-12 rounded-2xl px-5 border-black focus:outline-none bg-blue-100'
+                className='w-44 h-12 rounded-2xl px-5 border-black focus:outline-none bg-blue-100 mr-8'
                 type="text"
                 name="code"
-                placeholder='验证码'
+                placeholder='Verification Code'
                 value={formState.code}
                 onChange={handleChange}
                 required />
               <button
                 type="button"
-                className='px-4 h-12 rounded-2xl bg-blue-500 text-white hover:bg-blue-600 transition whitespace-nowrap'
+                className='w-44 h-12 rounded-2xl bg-blue-500 text-white hover:bg-blue-600 transition whitespace-nowrap'
                 onClick={sendVerificationCode}
                 disabled={countdown > 0}
               >
-                {countdown > 0 ? `${countdown}s` : '获取验证码'}
+                {countdown > 0 ? `${countdown}s` : 'Request OTP'}
               </button>
             </div>
 

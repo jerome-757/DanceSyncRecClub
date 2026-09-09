@@ -7,7 +7,8 @@ const path = require('path');
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data');
+// const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data');  // Railway 线上	/app/data	数据库在 Volume 里
+const DB_PATH = process.env.DB_PATH || __dirname;  // 本地	__dirname	数据库在 server 目录下（和 .db 文件同级）
 
 // ============================================================
 // 数据库连接
@@ -1327,6 +1328,7 @@ app.post('/api/scan/consume', (req, res) => {
                 const newUsed = card.used_count + count;
                 const today = new Date().toISOString().slice(0, 10);
 
+                // 次卡扣次后，记录剩余和已用
                 cardsDB.run(
                     `UPDATE membership_cards SET 
                         used_count = ?, remaining_count = ?,
@@ -1340,9 +1342,9 @@ app.post('/api/scan/consume', (req, res) => {
                         }
 
                         scanDB.run(
-                            `INSERT INTO scan_consumptions (member_id, card_id, consume_count, consume_date, class_name, source, notes) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                            [member.id, cardId, count, today, className || '', source || 'user', `扣${count}次`],
+                            `INSERT INTO scan_consumptions (member_id, card_id, consume_count, consume_date, class_name, source, notes, remaining_after, used_after) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                            [member.id, cardId, count, today, className || '', source || 'user', `扣${count}次`, newRemaining, newUsed],
                             function(err4) {
                                 if (err4) {
                                     error(res, '记录消费失败: ' + err4.message);
@@ -1451,19 +1453,30 @@ app.get('/api/scan/history/:memberNo', (req, res) => {
                     return;
                 }
 
-                // 再查卡类型（逐条查询）
+                // 有数据才执行第二步
+                if (rows.length === 0) {
+                    success(res, rows);
+                    return;
+                }
+
+
+                // 第二步：逐条查询卡信息
                 let completed = 0;
                 rows.forEach((row, index) => {
                     cardsDB.get(
-                        `SELECT card_category, name FROM membership_cards WHERE id = ?`,
+                        `SELECT name, remaining_after, used_after FROM membership_cards WHERE id = ?`,
                         [row.card_id],
                         (err3, card) => {
                             if (!err3 && card) {
-                                rows[index].card_category = card.card_category;
+                                // rows[index].card_category = card.card_category;
                                 rows[index].name = card.name;
+                                rows[index].remaining_count = card.remaining_after;
+                                rows[index].used_count = card.used_after;
                             } else {
-                                rows[index].card_category = '未知卡';
+                                // rows[index].card_category = '未知卡';
                                 rows[index].name = '未知卡';
+                                rows[index].remaining_count = 0;
+                                rows[index].used_count = 0;
                             }
                             completed++;
                             if (completed === rows.length) {
@@ -1472,10 +1485,11 @@ app.get('/api/scan/history/:memberNo', (req, res) => {
                         }
                     );
                 });
-
-                if (rows.length === 0) {
-                    success(res, rows);
-                }
+                
+                // 如果放在第二步后面，空数据时就不会返回响应，前端会一直等待超时。
+                // if (rows.length === 0) {
+                //     success(res, rows);
+                // }
             }
         );
     });
