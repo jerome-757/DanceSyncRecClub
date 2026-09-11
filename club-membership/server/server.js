@@ -1475,8 +1475,8 @@ app.get('/api/scan/history/:memberNo', (req, res) => {
                                 // rows[index].card_category = card.card_category;
                                 rows[index].name = card.name;
                                 // console.log('赋值后的 rows[index].name:', rows[index].name);
-                                rows[index].remaining_count = row.remaining_after; // 从 row 取
-                                rows[index].used_count = row.used_after;
+                                rows[index].remaining_count = row.remaining_after || 0; // 从 row 取
+                                rows[index].used_count = row.used_after || 0;
                             } else {
                                 // rows[index].card_category = '未知卡';
                                 rows[index].name = '未知卡';

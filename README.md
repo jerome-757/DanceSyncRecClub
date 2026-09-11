@@ -10,7 +10,7 @@
   <p><em>A comprehensive web application for managing dance club activities, memberships, and finances</em></p>
 </div>
 
-https://github.com/georgecuiX/DanceSyncRecClub/assets/89486336/9ea51440-55c2-4243-a2bc-e7a0f262955e
+![程序界面截图](./welcomescreen.png)
 
 ## 🌟 Overview
 
