@@ -60,6 +60,7 @@ const AdminHomePage = () => {
         { path: '/admin-finances', icon: '💰', label: '财务管理' },
         { path: '/card-types', icon: '📋', label: '卡种管理' },
         { path: '/member-management', icon: '👥', label: '会员管理' },
+        { path: '/sign-in-records', icon: '✍️', label: '签到信息' },
         { path: '/practiceCalendar', icon: '📅', label: '日程管理' },
         { path: '/communication', icon: '💬', label: '消息中心' },
     ];
@@ -169,7 +170,7 @@ const AdminHomePage = () => {
                         </div>
 
                         {/* ===== 功能快捷入口 ===== */}
-                        <div className="grid grid-cols-5 gap-4">
+                        <div className="grid grid-cols-6 gap-4">
                             {features.map((item, idx) => (
                                 <Link
                                     key={idx}

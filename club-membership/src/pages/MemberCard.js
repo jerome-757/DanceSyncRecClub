@@ -126,11 +126,11 @@ const MemberCard = () => {
             return;
         }
 
-        const msg = selectedCard.card_category === 'unlimited' 
-            ? `确认月卡签到？` 
-            : `本次将扣除 ${consumeCount} 次，剩余 ${selectedCard.remaining_count - consumeCount} 次，确认？`;
+        // const msg = selectedCard.card_category === 'unlimited' 
+        //     ? `确认月卡签到？` 
+        //     : `本次将扣除 ${consumeCount} 次，剩余 ${selectedCard.remaining_count - consumeCount} 次，确认？`;
 
-        if (!window.confirm(msg)) return;
+        // if (!window.confirm(msg)) return;
 
         setConsuming(true);
         try {
@@ -142,21 +142,27 @@ const MemberCard = () => {
                 source: 'user'
             });
             if (res.data.code === 0) {
-                alert(`✅ ${res.data.data.message}`);
+                // ✅ 成功：关闭弹窗，刷新数据，不做任何提示
+
+                // alert(`✅ ${res.data.data.message}`);
                 setShowConfirm(false);
                 fetchData();
             } else {
+                // ❌ 后端返回失败：提示
                 alert('消费失败: ' + res.data.message);
             }
         } catch (error) {
-            alert('网络错误，请重试');
+            // ❌ 网络错误：提示，这里吞掉了后端的错误
+            // alert('网络错误，请重试');
+            const msg = error.response?.data?.message || '网络错误，请重试';
+            alert(msg);
         }
         setConsuming(false);
     };
 
     // 获取今日签到记录
     const getTodayHistory = () => {
-        const today = new Date().toISOString().slice(0, 10);
+        const today = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
         return history.filter(item => item.consume_date === today);
     };
 
@@ -184,6 +190,20 @@ const MemberCard = () => {
     return (
         <div className="min-h-screen bg-gray-100 p-4 pb-20">
             <div className="max-w-lg mx-auto">
+                {/* ===== 退出按钮 ===== */}
+                <button
+                    className="w-full mt-4 mb-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition"
+                    onClick={() => {
+                        if (window.confirm('确定要退出吗？下次扫码需要重新验证。')) {
+                            localStorage.removeItem('clubMember');
+                            navigate('/scan');
+                        }
+                    }}
+                >
+                    🚪 退出登录
+                </button>
+
+
                 {/* ===== 会员信息卡片 ===== */}
                 {/* <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-6 text-white mb-4">
                     <div className="flex justify-between items-start">
@@ -287,7 +307,7 @@ const MemberCard = () => {
                                                 / 已用: {card.used_count} 次
                                             </div>
                                         ) : (
-                                            <div className="text-sm text-gray-600">🔄 期限卡不限次</div>
+                                            <div className="text-sm text-gray-600">🔄 期限卡每日限两次</div>
                                         )}
                                     </div>
                                     {/* 第三列：签到按钮 */}
@@ -415,19 +435,6 @@ const MemberCard = () => {
                     </div>
                 )}
 
-                {/* ===== 退出按钮 ===== */}
-                <button
-                    className="w-full mt-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition"
-                    onClick={() => {
-                        if (window.confirm('确定要退出吗？下次扫码需要重新验证。')) {
-                            localStorage.removeItem('clubMember');
-                            navigate('/scan');
-                        }
-                    }}
-                >
-                    🚪 退出登录
-                </button>
-
                 {/* ===== 消费确认弹窗 ===== */}
                 {showConfirm && selectedCard && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
@@ -439,11 +446,11 @@ const MemberCard = () => {
                                     <span className="font-bold">{member.name}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-gray-600">次卡</span>
+                                    <span className="text-gray-600">卡项</span>
                                     <span className="font-bold">{selectedCard.name}</span>
                                 </div>
                                 {selectedCard.card_category === 'unlimited' && (
-                                    <div className="text-sm text-green-600">🔄 月卡不限次，签到成功</div>
+                                    <div className="text-sm text-green-600">🔄 期限卡每日限两次</div>
                                 )}
                                 {selectedCard.card_category === 'fixed' && (
                                     <>
@@ -468,9 +475,6 @@ const MemberCard = () => {
                                             <span className="font-bold">{selectedCard.remaining_count - consumeCount} 次</span>
                                         </div>
                                     </>
-                                )}
-                                {selectedCard.card_category === 'unlimited' && (
-                                    <div className="text-sm text-green-600">🔄 期限卡签到成功</div>
                                 )}
                             </div>
                             <div className="flex gap-3">

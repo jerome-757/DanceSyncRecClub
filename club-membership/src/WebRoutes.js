@@ -26,7 +26,7 @@ import Attendance from './pages/Attendance';
 import ScanEntry from './pages/ScanEntry';
 import MemberCard from './pages/MemberCard';
 import CardTypeManagement from './pages/CardTypeManagement';
-
+import SignInRecords from './pages/SignInRecords';
 
 export const WebRoutes = () => {
     return (
@@ -59,7 +59,7 @@ export const WebRoutes = () => {
                         <Route path="/scan" element={<ScanEntry />} />
                         <Route path="/member-card/:memberNo" element={<MemberCard />} />
                         <Route path="/card-types" element={<CardTypeManagement />} />
-
+                        <Route path='/sign-in-records' element={<SignInRecords />} />
                         
                         {/* 404页面 */}
                         <Route path='*' element={

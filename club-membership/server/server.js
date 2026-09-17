@@ -3,6 +3,8 @@ const app = express();
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const http = require('http');
+const WebSocket = require('ws');
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -26,7 +28,6 @@ const cardTypesDB = new sqlite3.Database(path.join(DB_PATH, 'card_types.db'));
 const cardsDB = new sqlite3.Database(path.join(__dirname, 'data', 'membership_cards.db'));
 console.log('cardsDB 实际路径:', path.join(__dirname, 'data', 'membership_cards.db'));
 const scanDB = new sqlite3.Database(path.join(DB_PATH, 'scan_consumptions.db'));
-
 
 // ============================================================
 // 工具函数：生成会员编号
@@ -62,6 +63,17 @@ function success(res, data) {
 function error(res, message, code = 1) {
     res.status(400).json({ code, message });
 }
+
+// ============================================================
+// 工具函数：获取北京时间的日期字符串（YYYY-MM-DD）
+// ============================================================
+function getBeijingDate(offsetDays = 0) {
+    const now = new Date();
+    // 加 8 小时转北京时间，再加偏移天数
+    const beijing = new Date(now.getTime() + 8 * 60 * 60 * 1000 + offsetDays * 24 * 60 * 60 * 1000);
+    return beijing.toISOString().slice(0, 10);
+}
+
 
 // ============================================================
 // 1. 获取所有会员列表
@@ -170,7 +182,7 @@ app.post('/api/members', (req, res) => {
                     '冻结',
                     expiry_date || null,
                     notes || null,
-                    new Date().toISOString().slice(0, 10)
+                    getBeijingDate()
                 ],
                 function(err3) {
                     if (err3) {
@@ -322,7 +334,7 @@ app.post('/api/members/:id/attendance', (req, res) => {
                         }
 
                         // 更新会员的出勤统计
-                        // 判断是否本月
+                        // 判断是否本月, 取的是本地时间，不是 UTC
                         const now = new Date();
                         const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
                         const currentYear = now.getFullYear();
@@ -606,7 +618,7 @@ app.post('/api/register', (req, res) => {
                                 name,
                                 phone,
                                 '冻结',
-                                new Date().toISOString().slice(0, 10)
+                                getBeijingDate()
                             ],
                             function(err5) {
                                 if (err5) {
@@ -769,11 +781,11 @@ app.get('/api/dashboard/monthly-trend', (req, res) => {
 
 // 4. 获取即将过期的会员（7天内）
 app.get('/api/dashboard/expiring-members', (req, res) => {
-    const today = new Date();
-    const sevenDaysLater = new Date(today);
-    sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
-    const todayStr = today.toISOString().slice(0, 10);
-    const sevenDaysStr = sevenDaysLater.toISOString().slice(0, 10);
+    // const today = new Date();
+    // const sevenDaysLater = new Date(today);
+    // sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+    const todayStr = getBeijingDate();
+    const sevenDaysStr = getBeijingDate(7);
 
     membersDB.all(
         `SELECT id, name, phone, expiry_date FROM members 
@@ -1238,7 +1250,7 @@ app.post('/api/scan/consume', (req, res) => {
                 }
 
                 const now = new Date();
-                const today = now.toISOString().slice(0, 10);
+                const today = getBeijingDate();
 
                 // 查询今日签到次数（所有期限卡共用限制）
                 scanDB.all(
@@ -1257,9 +1269,10 @@ app.post('/api/scan/consume', (req, res) => {
                             return;
                         }
 
-                        // 1小时内只能签1次
-                        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-                        const oneHourAgoStr = oneHourAgo.toISOString();
+                        // 3小时内只能签1次
+                        const oneHourAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+                        // const oneHourAgoStr = oneHourAgo.toISOString();  字符串比较不匹配
+                        const oneHourAgoStr = oneHourAgo.toISOString().slice(0, 19).replace('T', ' ');
 
                         scanDB.get(
                             `SELECT * FROM scan_consumptions 
@@ -1272,11 +1285,11 @@ app.post('/api/scan/consume', (req, res) => {
                                     return;
                                 }
                                 if (recentRecord) {
-                                    error(res, '1小时内已签到，请稍后再试');
+                                    error(res, '3小时内已签到，请稍后再试');
                                     return;
                                 }
 
-                                const nowStr = now.toISOString().slice(0, 10);
+                                const nowStr = getBeijingDate();
 
                                 scanDB.run(
                                     `INSERT INTO scan_consumptions (member_id, card_id, consume_count, consume_date, class_name, source, notes) 
@@ -1301,6 +1314,7 @@ app.post('/api/scan/consume', (req, res) => {
                                         );
 
                                         const remainingToday = 2 - (todayRecords.length + 1);
+                                        broadcast({ type: 'new_checkin' });
                                         success(res, {
                                             memberName: member.name,
                                             cardType: card.card_category,
@@ -1328,7 +1342,7 @@ app.post('/api/scan/consume', (req, res) => {
 
                 const newRemaining = card.remaining_count - count;
                 const newUsed = card.used_count + count;
-                const today = new Date().toISOString().slice(0, 10);
+                const today = getBeijingDate();
 
                 // 次卡扣次后，记录剩余和已用
                 cardsDB.run(
@@ -1365,6 +1379,7 @@ app.post('/api/scan/consume', (req, res) => {
                                     }
                                 );
 
+                                broadcast({ type: 'new_checkin' });
                                 success(res, {
                                     memberName: member.name,
                                     cardType: card.card_category,
@@ -1627,7 +1642,7 @@ app.post('/api/member-cards', (req, res) => {
     cardsDB.run(
         `INSERT INTO membership_cards (member_id, name, card_category, total_count, used_count, remaining_count, price, purchase_date, expiry_date, status) 
          VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?, '有效')`,
-        [memberId, cardType, category, count, remaining, price, purchaseDate || new Date().toISOString().slice(0, 10), expiryDate || null],
+        [memberId, cardType, category, count, remaining, price, purchaseDate || getBeijingDate(), expiryDate || null],
         function(err) {
             if (err) {
                 error(res, '添加次卡失败: ' + err.message);
@@ -1635,7 +1650,7 @@ app.post('/api/member-cards', (req, res) => {
             }
 
             // 记录消费（购买次卡）
-            const today = new Date().toISOString().slice(0, 10);
+            const today = getBeijingDate();
             transactionsDB.run(
                 `INSERT INTO transactions (member_id, amount, type, payment_method, note, date) 
                  VALUES (?, ?, ?, ?, ?, ?)`,
@@ -1919,14 +1934,86 @@ app.delete('/api/card-types/:id', (req, res) => {
 //     });
 // });
 
+// 7. 获取所有会员签到记录（按日期筛选）
+app.get('/api/scan/all-history', (req, res) => {
+    const { start, end } = req.query;
+    const startDate = start || getBeijingDate();
+    const endDate = end || startDate;
 
+    scanDB.all(
+        `SELECT * FROM scan_consumptions 
+         WHERE consume_date >= ? AND consume_date <= ? 
+         ORDER BY created_at ASC`,
+        [startDate, endDate],
+        (err, rows) => {
+            if (err) {
+                error(res, '查询失败: ' + err.message);
+                return;
+            }
+            if (rows.length === 0) {
+                success(res, []);
+                return;
+            }
+
+            // 补充会员昵称和卡名称
+            let completed = 0;
+            rows.forEach((row, index) => {
+                membersDB.get(
+                    `SELECT nickname, name FROM members WHERE id = ?`,
+                    [row.member_id],
+                    (err2, member) => {
+                        rows[index].nickname = member?.nickname || member?.name || '未设置';
+
+                        cardsDB.get(
+                            `SELECT name FROM membership_cards WHERE id = ?`,
+                            [row.card_id],
+                            (err3, card) => {
+                                rows[index].card_name = card?.name || '未知卡';
+                                completed++;
+                                if (completed === rows.length) {
+                                    success(res, rows);
+                                }
+                            }
+                        );
+                    }
+                );
+            });
+        }
+    );
+});
 
 
 // ============================================================
 // 启动服务器
 // ============================================================
+// const PORT = process.env.PORT || 3001;
+// app.listen(PORT, () => {
+//     console.log(`✅ 服务器运行在 http://localhost:${PORT}`);
+//     console.log(`📋 API 接口: http://localhost:${PORT}/api/members`);
+// });
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+// WebSocket 连接管理
+wss.on('connection', (ws) => {
+    console.log('🔗 WebSocket 客户端已连接');
+    ws.on('close', () => {
+        console.log('🔌 WebSocket 客户端已断开');
+    });
+});
+
+// 广播函数
+function broadcast(data) {
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+        }
+    });
+}
+
+server.listen(PORT, () => {
     console.log(`✅ 服务器运行在 http://localhost:${PORT}`);
     console.log(`📋 API 接口: http://localhost:${PORT}/api/members`);
 });
