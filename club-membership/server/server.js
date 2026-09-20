@@ -11,12 +11,12 @@ const fs = require('fs');
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data');  // Railway 线上	/app/data	数据库在 Volume 里
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data');  // Railway 线上	/app/data	数据库在 Volume 里
 // const DB_PATH = process.env.DB_PATH || __dirname;  // 本地	__dirname	数据库在 server 目录下（和 .db 文件同级）
 // const DB_PATH = __dirname;    //  本地线上两用，不用来回切换路径，前提是删除 Railway 的路径DB_PATH=/app/data的环境变量,找的是server目录下的date
 
 // 上传目录：优先用环境变量 DB_PATH（线上是 /app/data），本地回退到 server/data
-const DATA_DIR = process.env.DB_PATH || path.join(__dirname, 'data');
+// const DATA_DIR = process.env.DB_PATH || path.join(__dirname, 'data');
 
 // ============================================================
 // 数据库连接
@@ -41,7 +41,7 @@ const newsDB = new sqlite3.Database(path.join(DB_PATH, 'news.db'));
 // if (!fs.existsSync(uploadDir)) {
 //     fs.mkdirSync(uploadDir, { recursive: true });
 // }
-const uploadDir = path.join(DATA_DIR, 'uploads', 'news');
+const uploadDir = path.join(DB_PATH, 'uploads', 'news');
 
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
