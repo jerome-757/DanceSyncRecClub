@@ -27,6 +27,11 @@ import ScanEntry from './pages/ScanEntry';
 import MemberCard from './pages/MemberCard';
 import CardTypeManagement from './pages/CardTypeManagement';
 import SignInRecords from './pages/SignInRecords';
+import NewsList from './pages/NewsList';
+import NewsDetail from './pages/NewsDetail';
+import NewsManagement from './pages/NewsManagement';
+import NewsEditor from './pages/NewsEditor';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export const WebRoutes = () => {
     return (
@@ -39,28 +44,96 @@ export const WebRoutes = () => {
                         <Route path='/admin-login' element={<AdminLogin />} />
                         <Route path='/register' element={<RegistrationScreen />} />
                         <Route path='/forgot' element={<ForgotPassword />} />
-                        <Route path='/member' element={<MemberHomePage />} />
-                        <Route path='/admin' element={<AdminHomePage />} />
                         <Route path='/schedulePractice' element={<SchedulePractice />} />
                         <Route path='/practiceCalendar' element={<PracticeCalendar />} />
                         <Route path='/practiceDetails' element={<PracticeDetails />} />
                         <Route path='/coach-login' element={<CoachLogin />} />
-                        <Route path='/coach' element={<CoachHomePage />} />
                         <Route path='/communication' element={<CommunicationCenter />} />
                         <Route path='/notifications' element={<Notifications />} />
                         <Route path='/coach-communication' element={<CoachCommunication />} />
-                        <Route path='/member-management' element={<MemberManagement />} />
                         <Route path='/member-payment' element={<MemberPayment />} />
-                        <Route path='/admin-finances' element={<AdminFinances />} />
                         <Route path='/current-month-payables' element={<CurrentMonthPayables />} />
                         <Route path='/attendance' element={<Attendance />} />
                         
                         {/* ===== 新增路由 ===== */}
                         <Route path="/scan" element={<ScanEntry />} />
                         <Route path="/member-card/:memberNo" element={<MemberCard />} />
+                        <Route path="/news" element={<NewsList />} />
+                        <Route path="/news/:id" element={<NewsDetail />} />
+
+                        {/* <Route path='/member' element={<MemberHomePage />} />
+                        <Route path='/admin' element={<AdminHomePage />} />
+                        <Route path='/coach' element={<CoachHomePage />} />
+                        <Route path='/member-management' element={<MemberManagement />} />
+                        <Route path='/admin-finances' element={<AdminFinances />} />
                         <Route path="/card-types" element={<CardTypeManagement />} />
                         <Route path='/sign-in-records' element={<SignInRecords />} />
-                        
+                        <Route path="/admin/news" element={<NewsManagement />} />
+                        <Route path="/admin/news/new" element={<NewsEditor />} />
+                        <Route path="/admin/news/:id/edit" element={<NewsEditor />} /> */}
+                        {/* 会员页面 */}
+                        <Route path='/member' element={
+                            <ProtectedRoute allowedRoles={['member', 'admin']}>
+                                <MemberHomePage />
+                            </ProtectedRoute>
+                        } />
+
+                        {/* 教练页面 */}
+                        <Route path='/coach' element={
+                            <ProtectedRoute allowedRoles={['coach', 'admin']}>
+                                <CoachHomePage />
+                            </ProtectedRoute>
+                        } />
+
+                        {/* 管理员页面 */}
+                        <Route path='/admin' element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <AdminHomePage />
+                            </ProtectedRoute>
+                        } />
+
+                        <Route path='/member-management' element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <MemberManagement />
+                            </ProtectedRoute>
+                        } />
+
+                        <Route path='/admin-finances' element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <AdminFinances />
+                            </ProtectedRoute>
+                        } />
+
+                        <Route path='/card-types' element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <CardTypeManagement />
+                            </ProtectedRoute>
+                        } />
+
+                        <Route path='/sign-in-records' element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <SignInRecords />
+                            </ProtectedRoute>
+                        } />
+
+                        <Route path='/admin/news' element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <NewsManagement />
+                            </ProtectedRoute>
+                        } />
+
+                        <Route path='/admin/news/new' element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <NewsEditor />
+                            </ProtectedRoute>
+                        } />
+
+                        <Route path='/admin/news/:id/edit' element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <NewsEditor />
+                            </ProtectedRoute>
+                        } />
+
                         {/* 404页面 */}
                         <Route path='*' element={
                         <div className=' overflow-y-hidden h-screen bg-black text-3xl text-white reddit-mono'>

@@ -42,6 +42,11 @@ export const AdminLogin = () => {
                         role: 'admin',
                         username: username
                     });
+                    localStorage.setItem('user', JSON.stringify({
+                        isAuthenticated: true,
+                        role: 'admin',  // 'member' 或 'coach' / 'admin'
+                        username: username
+                    }));
                     navigate('/admin'); // Navigate to the coach's homepage
                 } else {
                     setErrorMessage('Incorrect username or password');

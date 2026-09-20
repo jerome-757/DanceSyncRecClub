@@ -63,6 +63,7 @@ const AdminHomePage = () => {
         { path: '/sign-in-records', icon: '✍️', label: '签到信息' },
         { path: '/practiceCalendar', icon: '📅', label: '日程管理' },
         { path: '/communication', icon: '💬', label: '消息中心' },
+        { path: '/admin/news', icon: '📰', label: '新闻管理' },
     ];
 
     return (
@@ -170,7 +171,7 @@ const AdminHomePage = () => {
                         </div>
 
                         {/* ===== 功能快捷入口 ===== */}
-                        <div className="grid grid-cols-6 gap-4">
+                        <div className="grid grid-cols-7 gap-4">
                             {features.map((item, idx) => (
                                 <Link
                                     key={idx}

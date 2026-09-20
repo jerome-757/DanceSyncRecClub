@@ -42,6 +42,11 @@ export const Login = () => {
                         role: 'member',
                         username: username
                     });
+                    localStorage.setItem('user', JSON.stringify({
+                        isAuthenticated: true,
+                        role: 'member',
+                        username: username
+                    }));                    
                     navigate('/member'); // Navigate to the coach's homepage
                 } else {
                     setErrorMessage(res.data.message || '用户名或密码错误');

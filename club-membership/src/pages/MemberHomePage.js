@@ -29,7 +29,12 @@ const MemberHomePage = () => {
                         Notifications and Reminders
                         <LuBell className='w-80 h-80' />
                     </Link>
-                    <Link to="/" className="feature-box">
+                    <Link to="/" className="feature-box"
+                        onClick={() => {
+                            localStorage.removeItem('user');
+                            localStorage.removeItem('clubMember');
+                        }}
+                    >
                         Log Out
                         <LuLogOut className='w-80 h-80' />
                     </Link>

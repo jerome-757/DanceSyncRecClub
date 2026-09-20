@@ -24,7 +24,12 @@ const CoachHomePage = () => {
                         Communication Center
                         <img src={Communication} alt="icon" className='feature-icon' />
                     </Link>
-                    <Link to="/" className="feature-box">
+                    <Link to="/" className="feature-box"
+                        onClick={() => {
+                            localStorage.removeItem('user');
+                            localStorage.removeItem('clubMember');
+                        }}
+                    >
                         Log Out
                         <img src="https://static-00.iconduck.com/assets.00/logout-1-icon-2048x2048-dsthju9g.png" alt="icon" className='feature-icon' />
                     </Link>

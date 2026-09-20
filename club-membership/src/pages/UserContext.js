@@ -42,6 +42,8 @@ export const UserProvider = ({ children }) => {
             role: null,
             username: null
         });
+        localStorage.removeItem('user');
+        localStorage.removeItem('clubMember');
     };
 
     // Provide setUser in the context for direct manipulation if necessary

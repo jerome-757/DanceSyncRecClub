@@ -160,3 +160,29 @@ body {
     border-radius: 15px;
     padding: 2rem 1.5rem;
 }
+
+/* 新闻正文：图片超宽时横向滚动 */
+.news-content {
+    overflow-x: auto;
+    font-size: 18px;
+    line-height: 1.8;
+    color: #374151;
+}
+
+.news-content img {
+    max-width: none;
+    height: auto;
+    display: block;
+    margin: 1rem 0;
+}
+
+.news-content p {
+    margin-bottom: 1rem;
+}
+
+.news-content h1,
+.news-content h2,
+.news-content h3 {
+    font-weight: bold;
+    margin: 1.5rem 0 1rem;
+}

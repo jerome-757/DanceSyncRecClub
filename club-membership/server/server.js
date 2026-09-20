@@ -5,6 +5,8 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const http = require('http');
 const WebSocket = require('ws');
+const multer = require('multer');
+const fs = require('fs');
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -28,6 +30,27 @@ const cardTypesDB = new sqlite3.Database(path.join(DB_PATH, 'card_types.db'));
 const cardsDB = new sqlite3.Database(path.join(__dirname, 'data', 'membership_cards.db'));
 console.log('cardsDB 实际路径:', path.join(__dirname, 'data', 'membership_cards.db'));
 const scanDB = new sqlite3.Database(path.join(DB_PATH, 'scan_consumptions.db'));
+const newsDB = new sqlite3.Database(path.join(DB_PATH, 'news.db'));
+
+
+// 图片上传配置
+const uploadDir = path.join(__dirname, 'uploads', 'news');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        cb(null, `news_${Date.now()}${ext}`);
+    }
+});
+const upload = multer({ storage });
+
+// 静态文件访问
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // ============================================================
 // 工具函数：生成会员编号
@@ -1978,6 +2001,270 @@ app.get('/api/scan/all-history', (req, res) => {
                     }
                 );
             });
+        }
+    );
+});
+
+// ============================================================
+// 新闻接口
+// ============================================================
+
+// 1. 获取新闻列表（首页用）
+// app.get('/api/news', (req, res) => {
+//     const { limit = 5, category, status = '已发布' } = req.query;
+
+//     let sql = `SELECT id, title, summary, cover_image, category, tags, is_top, views, likes, author, publish_date, created_at 
+//                FROM news WHERE status = ?`;
+//     const params = [status];
+app.get('/api/news', (req, res) => {
+    const { limit = 5, category, status } = req.query;
+
+    let sql = `SELECT id, title, summary, cover_image, category, tags, is_top, views, likes, author, publish_date, created_at, status 
+               FROM news WHERE 1=1`;
+    const params = [];
+
+    if (status) {
+        sql += ` AND status = ?`;
+        params.push(status);
+    }
+
+    if (category) {
+        sql += ` AND category = ?`;
+        params.push(category);
+    }
+
+    sql += ` ORDER BY is_top DESC, publish_date DESC, created_at DESC LIMIT ?`;
+    params.push(parseInt(limit));
+
+    newsDB.all(sql, params, (err, rows) => {
+        if (err) {
+            error(res, '查询失败: ' + err.message);
+            return;
+        }
+        success(res, rows);
+    });
+});
+
+// 2. 获取新闻详情（浏览量+1）
+app.get('/api/news/:id', (req, res) => {
+    const { id } = req.params;
+
+    newsDB.run(`UPDATE news SET views = views + 1 WHERE id = ?`, [id], (err) => {
+        if (err) console.error('更新浏览量失败:', err.message);
+
+        newsDB.get(`SELECT * FROM news WHERE id = ?`, [id], (err2, row) => {
+            if (err2) {
+                error(res, '查询失败: ' + err2.message);
+                return;
+            }
+            if (!row) {
+                error(res, '新闻不存在');
+                return;
+            }
+            success(res, row);
+        });
+    });
+});
+
+// 3. 新增新闻（管理员）
+app.post('/api/news', (req, res) => {
+    const { title, content, summary, cover_image, category, tags, is_top, status, publish_date, author } = req.body;
+
+    if (!title) {
+        error(res, '标题为必填');
+        return;
+    }
+
+    newsDB.run(
+        `INSERT INTO news (title, content, summary, cover_image, category, tags, is_top, status, publish_date, author) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [title, content || '', summary || '', cover_image || '', category || '公告', tags || '', is_top ? 1 : 0, status || '已发布', publish_date || getBeijingDate(), author || 'admin'],
+        function(err) {
+            if (err) {
+                error(res, '添加失败: ' + err.message);
+                return;
+            }
+            success(res, { id: this.lastID, message: '新闻添加成功' });
+        }
+    );
+});
+
+// 4. 修改新闻（管理员）
+app.put('/api/news/:id', (req, res) => {
+    const { id } = req.params;
+    const { title, content, summary, cover_image, category, tags, is_top, status, publish_date } = req.body;
+
+    if (!title) {
+        error(res, '标题为必填');
+        return;
+    }
+
+    newsDB.run(
+        `UPDATE news SET 
+            title = ?, content = ?, summary = ?, cover_image = ?, 
+            category = ?, tags = ?, is_top = ?, status = ?, publish_date = ?,
+            updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?`,
+        [title, content || '', summary || '', cover_image || '', category || '公告', tags || '', is_top ? 1 : 0, status || '已发布', publish_date || getBeijingDate(), id],
+        function(err) {
+            if (err) {
+                error(res, '更新失败: ' + err.message);
+                return;
+            }
+            if (this.changes === 0) {
+                error(res, '新闻不存在');
+                return;
+            }
+            success(res, { message: '新闻更新成功' });
+        }
+    );
+});
+
+// 5. 删除新闻（管理员）
+app.delete('/api/news/:id', (req, res) => {
+    const { id } = req.params;
+
+    newsDB.run(`DELETE FROM news WHERE id = ?`, [id], function(err) {
+        if (err) {
+            error(res, '删除失败: ' + err.message);
+            return;
+        }
+        if (this.changes === 0) {
+            error(res, '新闻不存在');
+            return;
+        }
+
+        // 同时删除评论和点赞
+        newsDB.run(`DELETE FROM comments WHERE news_id = ?`, [id]);
+        newsDB.run(`DELETE FROM likes WHERE news_id = ?`, [id]);
+
+        success(res, { message: '删除成功' });
+    });
+});
+
+// 6. 上传封面图
+app.post('/api/news/upload', upload.single('cover'), (req, res) => {
+    if (!req.file) {
+        error(res, '请选择图片');
+        return;
+    }
+    success(res, {
+        url: `/uploads/news/${req.file.filename}`,
+        message: '上传成功'
+    });
+});
+
+// 7. 获取评论列表
+app.get('/api/news/:id/comments', (req, res) => {
+    const { id } = req.params;
+
+    newsDB.all(
+        `SELECT * FROM comments WHERE news_id = ? ORDER BY created_at DESC`,
+        [id],
+        (err, rows) => {
+            if (err) {
+                error(res, '查询失败: ' + err.message);
+                return;
+            }
+            success(res, rows);
+        }
+    );
+});
+
+// 8. 发表评论（需登录）
+app.post('/api/news/:id/comments', (req, res) => {
+    const { id } = req.params;
+    const { user_role, username, content } = req.body;
+
+    if (!username || !content) {
+        error(res, '请先登录并填写评论内容');
+        return;
+    }
+
+    newsDB.run(
+        `INSERT INTO comments (news_id, user_role, username, content) VALUES (?, ?, ?, ?)`,
+        [id, user_role || 'member', username, content],
+        function(err) {
+            if (err) {
+                error(res, '评论失败: ' + err.message);
+                return;
+            }
+            success(res, { id: this.lastID, message: '评论成功' });
+        }
+    );
+});
+
+// 9. 删除评论（管理员）
+app.delete('/api/comments/:id', (req, res) => {
+    const { id } = req.params;
+
+    newsDB.run(`DELETE FROM comments WHERE id = ?`, [id], function(err) {
+        if (err) {
+            error(res, '删除失败: ' + err.message);
+            return;
+        }
+        if (this.changes === 0) {
+            error(res, '评论不存在');
+            return;
+        }
+        success(res, { message: '删除成功' });
+    });
+});
+
+// 10. 点赞/取消点赞（需登录）
+app.post('/api/news/:id/like', (req, res) => {
+    const { id } = req.params;
+    const { username } = req.body;
+
+    if (!username) {
+        error(res, '请先登录');
+        return;
+    }
+
+    // 检查是否已点赞
+    newsDB.get(`SELECT * FROM likes WHERE news_id = ? AND username = ?`, [id, username], (err, row) => {
+        if (err) {
+            error(res, '查询失败: ' + err.message);
+            return;
+        }
+
+        if (row) {
+            // 取消点赞
+            newsDB.run(`DELETE FROM likes WHERE news_id = ? AND username = ?`, [id, username], (err2) => {
+                if (err2) {
+                    error(res, '取消点赞失败: ' + err2.message);
+                    return;
+                }
+                newsDB.run(`UPDATE news SET likes = likes - 1 WHERE id = ?`, [id]);
+                success(res, { liked: false, message: '已取消点赞' });
+            });
+        } else {
+            // 点赞
+            newsDB.run(`INSERT INTO likes (news_id, username) VALUES (?, ?)`, [id, username], (err2) => {
+                if (err2) {
+                    error(res, '点赞失败: ' + err2.message);
+                    return;
+                }
+                newsDB.run(`UPDATE news SET likes = likes + 1 WHERE id = ?`, [id]);
+                success(res, { liked: true, message: '点赞成功' });
+            });
+        }
+    });
+});
+
+// 11. 获取点赞人列表
+app.get('/api/news/:id/likes', (req, res) => {
+    const { id } = req.params;
+
+    newsDB.all(
+        `SELECT username, user_role, created_at FROM likes WHERE news_id = ? ORDER BY created_at DESC`,
+        [id],
+        (err, rows) => {
+            if (err) {
+                error(res, '查询失败: ' + err.message);
+                return;
+            }
+            success(res, rows);
         }
     );
 });

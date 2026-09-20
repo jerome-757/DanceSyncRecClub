@@ -75,20 +75,52 @@ const SignInRecords = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col">
+        // <div className="min-h-screen bg-gray-100 flex flex-col">
+        //     <Navbar />
+
+        //     <div className="bg-gray-800 text-white px-8 py-4 flex-shrink-0 flex items-center justify-between">
+        //         <div>
+        //             <h1 className="text-3xl font-bold">📋 签到信息</h1>
+        //             <p className="text-gray-400 text-sm">查看所有会员的签到记录</p>
+        //         </div>
+        //         <button
+        //             className="px-6 py-2 bg-slate-500 hover:bg-slate-600 rounded-lg transition"
+        //             onClick={() => navigate('/admin')}
+        //         >
+        //             ⬅ 返回
+        //         </button>
+        //     </div>
+
+        <div className="min-h-screen bg-gray-800 flex flex-col">
             <Navbar />
 
-            <div className="bg-gray-800 text-white px-8 py-4 flex-shrink-0 flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold">📋 签到信息</h1>
-                    <p className="text-gray-400 text-sm">查看所有会员的签到记录</p>
-                </div>
+            {/* 标题栏 */}
+            <div className="bg-sky-300 text-white px-8 py-2 flex-shrink-0 flex items-center justify-between">
                 <button
                     className="px-6 py-2 bg-slate-500 hover:bg-slate-600 rounded-lg transition"
                     onClick={() => navigate('/admin')}
                 >
                     ⬅ 返回
                 </button>
+                {/* <h2 className="text-3xl reddit-mono font-bold bg-slate-200 px-10 py-3 rounded-lg text-gray-800">
+                    📋 签到信息
+                </h2> */}
+                {/* <h2 className="text-3xl reddit-mono font-bold bg-slate-200 px-10 py-3 rounded-lg text-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-200">
+                    📋 签到信息
+                    <span className="block text-sm text-gray-500 font-normal reddit-mono mt-1.5">
+                        查看所有会员的签到记录
+                    </span>
+                </h2> */}
+                <div className="inline-block">
+                    <h2 className="text-3xl reddit-mono font-bold bg-slate-200 px-10 py-2 rounded-lg text-sky-500 shadow-lg hover:shadow-xl transition-shadow duration-200">
+                        📋 签到信息
+                    </h2>
+                    <p className="text-sm text-gray-500 font-normal reddit-mono mt-1.5 text-center">
+                        查看所有会员的签到记录
+                    </p>
+                </div>
+                {/* 右侧占位，保持居中对称 */}
+                <div className="w-28"></div>
             </div>
 
             <div className="flex-1 p-6 overflow-auto">
