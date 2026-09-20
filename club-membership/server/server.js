@@ -58,7 +58,7 @@ const upload = multer({ storage });
 
 // 静态文件访问
 // app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/uploads', express.static(path.join(DATA_DIR, 'uploads')));
+app.use('/uploads', express.static(path.join(DB_PATH, 'uploads')));
 
 // ============================================================
 // 工具函数：生成会员编号
