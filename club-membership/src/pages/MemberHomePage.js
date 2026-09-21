@@ -6,6 +6,8 @@ import Footer from '../components/Footer';
 import { FiLogOut } from 'react-icons/fi'
 import { LuBell, LuLogOut } from 'react-icons/lu'
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const MemberHomePage = () => {
 
     return (

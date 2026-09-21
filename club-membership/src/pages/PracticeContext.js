@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const PracticeContext = createContext();
 
 export const usePractices = () => useContext(PracticeContext);

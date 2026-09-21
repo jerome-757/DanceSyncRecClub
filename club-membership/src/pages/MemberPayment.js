@@ -5,6 +5,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { usePractices } from './PracticeContext';
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const MemberPayment = () => {
     const { addPractice } = usePractices();
     const navigate = useNavigate();

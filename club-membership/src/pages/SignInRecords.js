@@ -6,8 +6,10 @@ import axios from 'axios';
 
 // const API_BASE = 'http://localhost:3001';
 // const WS_BASE = 'ws://localhost:3001';
-const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
-const WS_BASE = 'wss://dancesyncrecclub-production.up.railway.app';
+// const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
+// const WS_BASE = 'wss://dancesyncrecclub-production.up.railway.app';
+const API_BASE = process.env.REACT_APP_API_URL;
+const WS_BASE = process.env.REACT_APP_WS_URL;
 
 const formatBeijingTime = (dateStr) => {
     if (!dateStr) return '';

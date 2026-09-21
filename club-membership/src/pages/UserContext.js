@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const UserContext = createContext(null); // Provide a default value
 
 export const useUser = () => useContext(UserContext);
@@ -13,7 +15,7 @@ export const UserProvider = ({ children }) => {
 
     const login = async (username, password, role) => {
         try {
-            const response = await fetch(`https://dancesyncrecclub-production.up.railway.app/validate-${role}-password`, {
+            const response = await fetch(`${API_BASE}/validate-${role}-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

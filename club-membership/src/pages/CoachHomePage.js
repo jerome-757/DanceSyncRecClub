@@ -5,6 +5,8 @@ import '../styles/index.css'
 import Footer from '../components/Footer';
 import Communication from '../assets/communications.png'
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const CoachHomePage = () => {
 
     return (

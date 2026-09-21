@@ -12,8 +12,9 @@ import ImageUploader from 'quill-image-uploader';
 // 注册图片上传模块
 Quill.register('modules/imageUploader', ImageUploader);
 
-const API_BASE = 'http://localhost:3001';
+// const API_BASE = 'http://localhost:3001';
 // const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
+const API_BASE = process.env.REACT_APP_API_URL;
 
 const modules = {
     toolbar: [

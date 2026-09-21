@@ -6,6 +6,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Link, useNavigate } from 'react-router-dom';
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const SchedulePractice = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [startTime, setStartTime] = useState(setHours(setMinutes(new Date(), 0), 8));

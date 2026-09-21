@@ -5,6 +5,8 @@ import "../styles/index.css";
 import Footer from "../components/Footer";
 import axios from "axios";
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const Notifications = () => {
     const [messages, setMessages] = useState([]);
 
@@ -12,7 +14,7 @@ const Notifications = () => {
         // Function to fetch messages from the server
         const fetchMessages = async () => {
             try {
-                const response = await axios.get("https://dancesyncrecclub-production.up.railway.app/message-center");
+                const response = await axios.get(`${API_BASE}/message-center`);
                 // Reverse the order of messages array
                 const reversedMessages = response.data.reverse();
                 setMessages(reversedMessages);

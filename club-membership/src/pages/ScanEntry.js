@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logo from '../assets/logo.png';
 
-const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
+// const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
+const API_BASE = process.env.REACT_APP_API_URL;
 
 const ScanEntry = () => {
     const navigate = useNavigate();

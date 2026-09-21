@@ -31,10 +31,9 @@ const transactionsDB = new sqlite3.Database(path.join(DB_PATH, 'transactions.db'
 const attendanceDB = new sqlite3.Database(path.join(DB_PATH, 'attendance_records.db'));
 const cardTypesDB = new sqlite3.Database(path.join(DB_PATH, 'card_types.db'));
 const cardsDB = new sqlite3.Database(path.join(__dirname, 'data', 'membership_cards.db'));
-console.log('cardsDB 实际路径:', path.join(__dirname, 'data', 'membership_cards.db'));
 const scanDB = new sqlite3.Database(path.join(DB_PATH, 'scan_consumptions.db'));
 const newsDB = new sqlite3.Database(path.join(DB_PATH, 'news.db'));
-
+const scheduleDB = new sqlite3.Database(path.join(DB_PATH, 'schedule.db'));
 
 // 图片上传配置
 // const uploadDir = path.join(__dirname, 'uploads', 'news');
@@ -2267,6 +2266,352 @@ app.get('/api/news/:id/likes', (req, res) => {
     newsDB.all(
         `SELECT username, user_role, created_at FROM likes WHERE news_id = ? ORDER BY created_at DESC`,
         [id],
+        (err, rows) => {
+            if (err) {
+                error(res, '查询失败: ' + err.message);
+                return;
+            }
+            success(res, rows);
+        }
+    );
+});
+
+// ============================================================
+// 排课 & 预约接口
+// ============================================================
+
+// 1. 获取地点列表
+app.get('/api/locations', (req, res) => {
+    scheduleDB.all(`SELECT * FROM locations WHERE status = '启用' ORDER BY id ASC`, (err, rows) => {
+        if (err) {
+            error(res, '查询失败: ' + err.message);
+            return;
+        }
+        success(res, rows);
+    });
+});
+
+// 2. 添加地点
+app.post('/api/locations', (req, res) => {
+    const { name } = req.body;
+    if (!name) {
+        error(res, '地点名为必填');
+        return;
+    }
+    scheduleDB.run(`INSERT INTO locations (name) VALUES (?)`, [name], function(err) {
+        if (err) {
+            error(res, '添加失败: ' + err.message);
+            return;
+        }
+        success(res, { id: this.lastID, message: '地点添加成功' });
+    });
+});
+
+// 3. 修改地点
+app.put('/api/locations/:id', (req, res) => {
+    const { id } = req.params;
+    const { name } = req.body;
+    if (!name) {
+        error(res, '地点名为必填');
+        return;
+    }
+    scheduleDB.run(`UPDATE locations SET name = ? WHERE id = ?`, [name, id], function(err) {
+        if (err) {
+            error(res, '更新失败: ' + err.message);
+            return;
+        }
+        success(res, { message: '地点更新成功' });
+    });
+});
+
+// 4. 删除地点
+app.delete('/api/locations/:id', (req, res) => {
+    const { id } = req.params;
+    scheduleDB.run(`UPDATE locations SET status = '停用' WHERE id = ?`, [id], function(err) {
+        if (err) {
+            error(res, '删除失败: ' + err.message);
+            return;
+        }
+        success(res, { message: '地点已删除' });
+    });
+});
+
+// 5. 获取课程列表
+// 管理员：全部；教练/会员：默认未来 10 天
+app.get('/api/schedule', (req, res) => {
+    const { start, end, coach, role } = req.query;
+    let sql = `SELECT * FROM practice_schedule WHERE status = '正常'`;
+    const params = [];
+
+    if (start) {
+        sql += ` AND date >= ?`;
+        params.push(start);
+    }
+    if (end) {
+        sql += ` AND date <= ?`;
+        params.push(end);
+    }
+    if (coach) {
+        sql += ` AND coach_name = ?`;
+        params.push(coach);
+    }
+
+    sql += ` ORDER BY date ASC, start_time ASC`;
+
+    scheduleDB.all(sql, params, (err, rows) => {
+        if (err) {
+            error(res, '查询失败: ' + err.message);
+            return;
+        }
+        success(res, rows);
+    });
+});
+
+// 6. 添加课程（支持单日、多日、每周重复）
+app.post('/api/schedule', (req, res) => {
+    const {
+        repeat_type,      // 'none' | 'weekly'
+        dates,            // repeat_type='none' 时用，日期数组
+        start_date,       // repeat_type='weekly' 时用
+        repeat_count,     // weekly 重复次数
+        start_time,
+        end_time,
+        class_name,
+        coach_name,
+        location,
+        max_capacity,
+        notes
+    } = req.body;
+
+    if (!start_time || !end_time || !class_name) {
+        error(res, '时间、课程名为必填');
+        return;
+    }
+
+    // 生成日期列表
+    let finalDates = [];
+    if (repeat_type === 'weekly') {
+        if (!start_date || !repeat_count || repeat_count < 1) {
+            error(res, '每周重复需要起始日期和次数');
+            return;
+        }
+        const base = new Date(start_date + 'T00:00:00');
+        for (let i = 0; i < repeat_count; i++) {
+            const d = new Date(base);
+            d.setDate(d.getDate() + i * 7);
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            finalDates.push(`${y}-${m}-${day}`);
+        }
+    } else {
+        if (!dates || !dates.length) {
+            error(res, '请选择至少一个日期');
+            return;
+        }
+        finalDates = dates;
+    }
+
+    let completed = 0;
+    let addedIds = [];
+
+    finalDates.forEach(date => {
+        scheduleDB.run(
+            `INSERT INTO practice_schedule (date, start_time, end_time, class_name, coach_name, location, max_capacity, notes) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [date, start_time, end_time, class_name, coach_name || '', location || '', max_capacity || 10, notes || ''],
+            function(err) {
+                if (!err) addedIds.push(this.lastID);
+                completed++;
+                if (completed === finalDates.length) {
+                    success(res, { ids: addedIds, message: `成功添加 ${addedIds.length} 节课` });
+                }
+            }
+        );
+    });
+});
+
+// 7. 修改课程
+app.put('/api/schedule/:id', (req, res) => {
+    const { id } = req.params;
+    const { date, start_time, end_time, class_name, coach_name, location, max_capacity, notes } = req.body;
+
+    const todayStr = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    // 先查课程原日期
+    scheduleDB.get(`SELECT date FROM practice_schedule WHERE id = ?`, [id], (err0, row) => {
+        if (err0 || !row) {
+            error(res, '课程不存在');
+            return;
+        }
+        if (row.date < todayStr) {
+            error(res, '不能编辑过去的课程');
+            return;
+        }
+
+        scheduleDB.run(
+            `UPDATE practice_schedule SET 
+                date = ?, start_time = ?, end_time = ?, class_name = ?, 
+                coach_name = ?, location = ?, max_capacity = ?, notes = ?
+            WHERE id = ?`,
+            [date, start_time, end_time, class_name, coach_name || '', location || '', max_capacity || 10, notes || '', id],
+            function(err) {
+                if (err) {
+                    error(res, '更新失败: ' + err.message);
+                    return;
+                }
+                success(res, { message: '课程更新成功' });
+            }
+        );
+    });
+});
+
+// 8. 删除课程
+// app.delete('/api/schedule/:id', (req, res) => {
+//     const { id } = req.params;
+//     scheduleDB.run(`UPDATE practice_schedule SET status = '已取消' WHERE id = ?`, [id], function(err) {
+//         if (err) {
+//             error(res, '删除失败: ' + err.message);
+//             return;
+//         }
+//         success(res, { message: '课程已取消' });
+//     });
+// });
+
+app.delete('/api/schedule/:id', (req, res) => {
+    const { id } = req.params;
+
+    const todayStr = new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    scheduleDB.get(`SELECT date FROM practice_schedule WHERE id = ?`, [id], (err0, row) => {
+        if (err0 || !row) {
+            error(res, '课程不存在');
+            return;
+        }
+        if (row.date < todayStr) {
+            error(res, '不能删除过去的课程');
+            return;
+        }
+
+        scheduleDB.run(`UPDATE practice_schedule SET status = '已取消' WHERE id = ?`, [id], function(err) {
+            if (err) {
+                error(res, '删除失败: ' + err.message);
+                return;
+            }
+            success(res, { message: '课程已取消' });
+        });
+    });
+});
+
+// 9. 会员预约
+app.post('/api/schedule/:id/book', (req, res) => {
+    const { id } = req.params;
+    const { member_id, member_name } = req.body;
+
+    if (!member_id || !member_name) {
+        error(res, '请先登录');
+        return;
+    }
+
+    scheduleDB.get(
+        `SELECT * FROM bookings WHERE schedule_id = ? AND member_id = ? AND status = '已预约'`,
+        [id, member_id],
+        (err, existing) => {
+            if (err) {
+                error(res, '查询失败: ' + err.message);
+                return;
+            }
+            if (existing) {
+                error(res, '你已预约这节课');
+                return;
+            }
+
+            scheduleDB.get(`SELECT * FROM practice_schedule WHERE id = ? AND status = '正常'`, [id], (err2, course) => {
+                if (err2 || !course) {
+                    error(res, '课程不存在');
+                    return;
+                }
+
+                scheduleDB.run(
+                    `INSERT INTO bookings (schedule_id, member_id, member_name) VALUES (?, ?, ?)`,
+                    [id, member_id, member_name],
+                    function(err3) {
+                        if (err3) {
+                            error(res, '预约失败: ' + err3.message);
+                            return;
+                        }
+
+                        scheduleDB.run(
+                            `UPDATE practice_schedule SET booked_count = booked_count + 1 WHERE id = ?`,
+                            [id]
+                        );
+
+                        const isFull = course.booked_count + 1 >= course.max_capacity;
+                        success(res, {
+                            message: isFull ? '预约成功（已满，你是候补）' : '预约成功',
+                            isWaiting: isFull
+                        });
+                    }
+                );
+            });
+        }
+    );
+});
+
+// 10. 会员取消预约
+app.delete('/api/schedule/:id/book', (req, res) => {
+    const { id } = req.params;
+    const { member_id } = req.body;
+
+    scheduleDB.run(
+        `UPDATE bookings SET status = '已取消' WHERE schedule_id = ? AND member_id = ? AND status = '已预约'`,
+        [id, member_id],
+        function(err) {
+            if (err) {
+                error(res, '取消失败: ' + err.message);
+                return;
+            }
+            if (this.changes === 0) {
+                error(res, '未找到预约记录');
+                return;
+            }
+
+            scheduleDB.run(
+                `UPDATE practice_schedule SET booked_count = booked_count - 1 WHERE id = ? AND booked_count > 0`,
+                [id]
+            );
+
+            success(res, { message: '已取消预约' });
+        }
+    );
+});
+
+// 11. 查看某课的预约名单
+app.get('/api/schedule/:id/bookings', (req, res) => {
+    const { id } = req.params;
+    scheduleDB.all(
+        `SELECT * FROM bookings WHERE schedule_id = ? AND status = '已预约' ORDER BY created_at ASC`,
+        [id],
+        (err, rows) => {
+            if (err) {
+                error(res, '查询失败: ' + err.message);
+                return;
+            }
+            success(res, rows);
+        }
+    );
+});
+
+// 12. 获取某会员的预约记录
+app.get('/api/member/:memberId/bookings', (req, res) => {
+    const { memberId } = req.params;
+    scheduleDB.all(
+        `SELECT b.*, s.date, s.start_time, s.end_time, s.class_name, s.coach_name, s.location 
+         FROM bookings b 
+         LEFT JOIN practice_schedule s ON b.schedule_id = s.id 
+         WHERE b.member_id = ? AND b.status = '已预约' 
+         ORDER BY s.date ASC, s.start_time ASC`,
+        [memberId],
         (err, rows) => {
             if (err) {
                 error(res, '查询失败: ' + err.message);

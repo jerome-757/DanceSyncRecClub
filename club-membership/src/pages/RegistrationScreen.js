@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import axios from 'axios'
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const RegistrationScreen = () => {
   const [formState, setFormState] = useState({
     firstName: '',
@@ -58,7 +60,7 @@ const RegistrationScreen = () => {
     const { firstName, lastName, phone, username, password, role } = formState;
 
     // Send data to backend for registration
-    axios.post('https://dancesyncrecclub-production.up.railway.app/register', {
+    axios.post(`${API_BASE}/register`, {
       firstName,
       lastName,
       phone,

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const ForgotPassword = () => {
     const [formData, setFormData] = useState({
         username: '',

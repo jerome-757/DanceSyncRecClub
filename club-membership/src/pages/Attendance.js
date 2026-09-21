@@ -4,20 +4,23 @@ import Footer from "../components/Footer";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const Attendance = () => {
     const [members, setMembers] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchMembers = async () => {
-            try {
-                const response = await axios.get("https://dancesyncrecclub-production.up.railway.app/member-management-list");
-                setMembers(response.data);
-            } catch (error) {
-                console.error("Error fetching members:", error);
-            }
-        };
-        fetchMembers();
+        // const fetchMembers = async () => {
+        //     try {
+        //         // const response = await axios.get("https://dancesyncrecclub-production.up.railway.app/member-management-list");
+        //         const response = await axios.get(`${API_BASE}/member-management-list`); // 这个接口后端没有，所以访问返回 404。
+        //         setMembers(response.data);
+        //     } catch (error) {
+        //         console.error("Error fetching members:", error);
+        //     }
+        // };
+        // fetchMembers();
     }, []);
 
     const handleBack = () => {

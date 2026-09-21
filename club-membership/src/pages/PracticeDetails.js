@@ -5,6 +5,8 @@ import axios from 'axios';
 import { usePractices } from '../pages/PracticeContext';
 import { useUser } from '../pages/UserContext';
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const PracticeDetails = () => {
     const navigate = useNavigate();
     const { user } = useUser();
@@ -14,7 +16,7 @@ const PracticeDetails = () => {
     
     useEffect(() => {
         if (user.role === 'admin') {
-            axios.get('https://dancesyncrecclub-production.up.railway.app/coachs')
+            axios.get(`${API_BASE}/coachs`)
                 .then(response => {
                     console.log(response.data); // Log to check the response data
                     setCoaches(response.data);
@@ -24,7 +26,7 @@ const PracticeDetails = () => {
                 });
         }
         if (user.role === 'coach') {
-            axios.get('https://dancesyncrecclub-production.up.railway.app/members')
+            axios.get(`${API_BASE}/members`)
                 .then(response => setMembers(response.data))
                 .catch(error => console.error('Failed to fetch members:', error));
         }

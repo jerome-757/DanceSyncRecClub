@@ -5,6 +5,8 @@ import "../styles/index.css";
 import Footer from "../components/Footer";
 import axios from "axios";
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const CoachCommunication = () => {
     const [errorMessage, setErrorMessage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
@@ -18,7 +20,7 @@ const CoachCommunication = () => {
     useEffect(() => {
         // Fetch messages from the server when the component mounts
         axios
-            .get("https://dancesyncrecclub-production.up.railway.app/message-center")
+            .get(`${API_BASE}/message-center`)
             .then((response) => {
                 // Reverse the order of messages array
                 const reversedMessages = response.data.reverse();
@@ -37,7 +39,7 @@ const CoachCommunication = () => {
         sender += " (Coach)";
 
         axios
-            .post("https://dancesyncrecclub-production.up.railway.app/message-center", {
+            .post(`${API_BASE}/message-center`, {
                 sender,
                 message,
             })
@@ -52,7 +54,7 @@ const CoachCommunication = () => {
                     message: "",
                 });
                 axios
-                    .get("https://dancesyncrecclub-production.up.railway.app/message-center")
+                    .get(`${API_BASE}/message-center`)
                     .then((response) => {
                         // Reverse the order of messages array
                         const reversedMessages = response.data.reverse();

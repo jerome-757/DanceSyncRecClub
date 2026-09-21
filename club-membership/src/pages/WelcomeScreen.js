@@ -8,7 +8,8 @@ import MyBackground from '../assets/xfdanceclub.jpg';
 import axios from 'axios';
 
 // const API_BASE = 'http://localhost:3001';
-const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
+// const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
+const API_BASE = process.env.REACT_APP_API_URL;
 
 const WelcomeScreen = () => {
   const [newsList, setNewsList] = useState([]);
@@ -57,9 +58,9 @@ const WelcomeScreen = () => {
       {/* ===== 新闻动态 ===== */}
       <div className="w-full py-16 px-20 bg-white">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-4xl font-bold text-gray-800">📰 新闻动态</h2>
+          <h2 className="text-4xl font-bold text-gray-800">📰 News</h2>
           <Link to="/news" className="text-blue-600 hover:text-blue-800 font-medium text-lg">
-            查看更多 →
+            More →
           </Link>
         </div>
 

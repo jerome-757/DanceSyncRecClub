@@ -33,7 +33,8 @@ export const AdminLogin = () => {
     
         const { username, password } = credentials;
     
-        axios.post('https://dancesyncrecclub-production.up.railway.app/api/admin-login', { username, password })
+        // axios.post('https://dancesyncrecclub-production.up.railway.app/api/admin-login', { username, password })
+        axios.post(`${process.env.REACT_APP_API_URL}/api/admin-login`, { username, password })
             .then(res => {
                 console.log('登录响应:', res.data);
                 if (res.data.code === 0) {

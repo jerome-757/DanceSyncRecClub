@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE = process.env.REACT_APP_API_URL;
 
 const CurrentMonthPayables = () => {
     const navigate = useNavigate();

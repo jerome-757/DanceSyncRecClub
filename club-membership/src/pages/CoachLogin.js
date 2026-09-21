@@ -33,7 +33,8 @@ export const CoachLogin = () => {
     
         const { username, password } = credentials;
     
-        axios.post('https://dancesyncrecclub-production.up.railway.app/api/coach-login', { username, password })
+        // axios.post('https://dancesyncrecclub-production.up.railway.app/api/coach-login', { username, password })
+        axios.post(`${process.env.REACT_APP_API_URL}/api/coach-login`, { username, password })
             .then(res => {
                 console.log('登录响应:', res.data);
                 if (res.data.code === 0) {
@@ -68,7 +69,7 @@ export const CoachLogin = () => {
             <div className='flex flex-row h-full'>
                 <form className='flex flex-col box flex-2' onSubmit={handleSubmit}>
                     <div className='flex-1 flex flex-row items-end w-full justify-start pl-20'>
-                    <h1 className=' text-center font-semibold text-6xl bg-red-100 py-1 px-2 reddit-mono'>Coaches.</h1>
+                    <h1 className=' text-center font-semibold text-6xl bg-red-100 py-1 px-2 reddit-mono'>Coach.</h1>
                     </div>
                     <div className='flex-3 flex justify-center flex-col'>
                     {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}

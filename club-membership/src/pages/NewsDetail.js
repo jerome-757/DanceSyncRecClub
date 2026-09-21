@@ -5,7 +5,8 @@ import Footer from '../components/Footer';
 import axios from 'axios';
 
 // const API_BASE = 'http://localhost:3001';
-const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
+// const API_BASE = 'https://dancesyncrecclub-production.up.railway.app';
+const API_BASE = process.env.REACT_APP_API_URL;
 
 const NewsDetail = () => {
     const { id } = useParams();

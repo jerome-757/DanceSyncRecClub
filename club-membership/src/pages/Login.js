@@ -33,8 +33,9 @@ export const Login = () => {
     
         const { username, password } = credentials;
     
-        axios.post('https://dancesyncrecclub-production.up.railway.app/api/member-login', { username, password })
-            .then(res => {
+        // axios.post('https://dancesyncrecclub-production.up.railway.app/api/member-login', { username, password })
+        axios.post(`${process.env.REACT_APP_API_URL}/api/member-login`, { username, password })
+        .then(res => {
                 console.log('登录响应:', res.data);
                 if (res.data.code === 0) {
                     setUser({ // Set the user context state
